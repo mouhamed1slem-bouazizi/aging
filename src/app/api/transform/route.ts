@@ -4,18 +4,8 @@ import { AgeCategory, AIModel, TransformResponse } from '@/types';
 
 export const maxDuration = 120;
 
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const POLLINATIONS_API_URL = 'https://image.pollinations.ai/prompt';
-
-// Model mapping for OpenRouter
-const OPENROUTER_MODELS: Record<AIModel, string | null> = {
-  'pollinations': null, // Uses Pollinations API directly
-  'flux-2-pro': 'black-forest-labs/flux.2-pro',
-  'gemini-3-pro': 'google/gemini-3-pro-image-preview',
-  'gpt-5-mini': 'openai/gpt-5-image-mini',
-  'gpt-5': 'openai/gpt-5-image',
-  'gemini-2.5-flash': 'google/gemini-2.5-flash-image',
-};
+const GOOGLE_AI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:generateImages';
 
 export async function POST(request: NextRequest): Promise<NextResponse<TransformResponse>> {
   try {
@@ -56,8 +46,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       return await handlePollinationsTransform(image, category);
     }
 
-    // Use OpenRouter models (requires API key)
-    return await handleOpenRouterTransform(image, category, model);
+    // Use Google Gemini Imagen 3
+    if (model === 'gemini-imagen') {
+      return await handleGeminiImagenTransform(image, category);
+    }
+
+    // Fallback
+    return NextResponse.json(
+      { success: false, error: 'Invalid model selected' },
+      { status: 400 }
+    );
     
   } catch (error) {
     console.error('Transform API error:', error);
@@ -117,137 +115,83 @@ async function handlePollinationsTransform(
   }
 }
 
-// Handle OpenRouter model transformation (requires API key)
-async function handleOpenRouterTransform(
+// Handle Google Gemini Imagen transformation
+async function handleGeminiImagenTransform(
   image: string,
-  category: { label: string; ageRange: string; prompt: string },
-  model: AIModel
+  category: { label: string; ageRange: string; prompt: string }
 ): Promise<NextResponse<TransformResponse>> {
-  const apiKey = process.env.OPENROUTER_API_KEY;
+  const apiKey = process.env.GOOGLE_AI_API_KEY;
   
-  if (!apiKey || apiKey === 'your_openrouter_api_key_here') {
+  if (!apiKey) {
     return NextResponse.json(
       { 
         success: false, 
-        error: 'OpenRouter API key not configured. Please add OPENROUTER_API_KEY to environment variables or use Pollinations.AI (free).' 
+        error: 'Google AI API key not configured. Please add GOOGLE_AI_API_KEY to environment variables.' 
       },
-      { status: 400 }
-    );
-  }
-
-  const openRouterModel = OPENROUTER_MODELS[model];
-  if (!openRouterModel) {
-    return NextResponse.json(
-      { success: false, error: 'Invalid model selected' },
       { status: 400 }
     );
   }
 
   try {
-    const requestPayload = {
-      model: openRouterModel,
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'image_url',
-              image_url: {
-                url: image.startsWith('data:') ? image : `data:image/jpeg;base64,${image}`,
-              },
-            },
-            {
-              type: 'text',
-              text: `Transform this person to appear ${category.ageRange} old (${category.label}). ${category.prompt} Generate a photorealistic image.`,
-            },
-          ],
-        },
-      ],
+    // Create a detailed prompt for age transformation
+    const prompt = `A photorealistic portrait of a person aged ${category.ageRange} (${category.label}). ` +
+      `${category.prompt} Professional photo quality, natural lighting, detailed facial features showing ` +
+      `age-appropriate characteristics, high resolution, 4k quality`;
+
+    console.log('Generating image with Google Gemini Imagen 3...');
+
+    const requestBody = {
+      prompt: prompt,
+      number_of_images: 1,
+      aspect_ratio: '1:1',
+      safety_filter_level: 'block_some',
+      person_generation: 'allow_adult',
     };
 
-    console.log(`Calling OpenRouter with model: ${openRouterModel}`);
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 90000);
-
-    const response = await fetch(OPENROUTER_API_URL, {
+    const response = await fetch(`${GOOGLE_AI_API_URL}?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-        'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-        'X-Title': 'AgeFX - Age Transformation App',
       },
-      body: JSON.stringify(requestPayload),
-      signal: controller.signal,
+      body: JSON.stringify(requestBody),
     });
-
-    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('OpenRouter API error:', response.status, errorData);
-      throw new Error(`AI service error: ${response.status}`);
+      console.error('Google AI API error:', response.status, errorData);
+      throw new Error(`Google AI service error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('OpenRouter response received');
+    console.log('Google Gemini response received');
 
-    // Try to extract generated image from response
+    // Extract the generated image
     let transformedImage: string | undefined;
 
-    if (data.choices && data.choices[0]) {
-      const message = data.choices[0].message;
-      const content = message?.content;
-
-      // Check various response formats
-      if (typeof content === 'string') {
-        const imageMatch = content.match(/(data:image\/[^;]+;base64,[^"\s]+|https?:\/\/[^\s"]+\.(png|jpg|jpeg|webp)[^\s"]*)/i);
-        if (imageMatch) {
-          transformedImage = imageMatch[1];
-        }
-      } else if (Array.isArray(content)) {
-        for (const item of content) {
-          if (item.type === 'image_url' && item.image_url?.url) {
-            transformedImage = item.image_url.url;
-            break;
-          }
-        }
-      }
-
-      // Check for Gemini inline_data format
-      if (!transformedImage && message?.parts) {
-        for (const part of message.parts) {
-          if (part.inline_data?.mime_type?.startsWith('image/') && part.inline_data?.data) {
-            transformedImage = `data:${part.inline_data.mime_type};base64,${part.inline_data.data}`;
-            break;
-          }
-        }
-      }
-    }
-
-    // Check for OpenAI image generation format
-    if (!transformedImage && data.data && data.data[0]) {
-      if (data.data[0].b64_json) {
-        transformedImage = `data:image/png;base64,${data.data[0].b64_json}`;
-      } else if (data.data[0].url) {
-        transformedImage = data.data[0].url;
+    if (data.generatedImages && data.generatedImages[0]) {
+      const imageData = data.generatedImages[0];
+      
+      // Check for base64 image data
+      if (imageData.bytesBase64Encoded) {
+        transformedImage = `data:image/png;base64,${imageData.bytesBase64Encoded}`;
+      } else if (imageData.imageBytes) {
+        transformedImage = `data:image/png;base64,${imageData.imageBytes}`;
       }
     }
 
     if (!transformedImage) {
-      console.log('No image found in response. Model may not support image generation.');
-      throw new Error('No image was generated. This model may not support image output. Try Pollinations.AI or another model.');
+      console.log('No image found in Google AI response:', JSON.stringify(data, null, 2));
+      throw new Error('No image was generated by Google AI');
     }
 
-    console.log('Successfully extracted transformed image');
+    console.log('Successfully generated image with Google Gemini Imagen');
 
     return NextResponse.json({
       success: true,
       transformedImage,
     });
   } catch (error) {
-    console.error('OpenRouter transformation error:', error);
+    console.error('Google Gemini transformation error:', error);
     throw error;
   }
 }

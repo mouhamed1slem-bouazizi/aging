@@ -1,8 +1,8 @@
 // Age categories for transformation
 export type AgeCategory = 'baby' | 'young' | 'adult' | 'old' | 'elderly';
 
-// AI Model types
-export type AIModel = 'pollinations' | 'flux-2-pro' | 'gemini-3-pro' | 'gpt-5-mini' | 'gpt-5' | 'gemini-2.5-flash';
+// AI Model types - simplified to just two working models
+export type AIModel = 'pollinations' | 'gemini-imagen';
 
 export interface AIModelOption {
   id: AIModel;
