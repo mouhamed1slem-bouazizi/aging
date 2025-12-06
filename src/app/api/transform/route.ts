@@ -134,8 +134,27 @@ async function handleGeminiImagenTransform(
   }
 
   try {
+    // First, list all available models to see what we can use
+    console.log('Fetching list of available Gemini models...');
+    const listModelsResponse = await fetch(
+      `${GOOGLE_GEMINI_API_URL}?key=${apiKey}`,
+      { method: 'GET' }
+    );
+    
+    if (listModelsResponse.ok) {
+      const modelsList = await listModelsResponse.json();
+      console.log('Available Gemini models:');
+      if (modelsList.models) {
+        modelsList.models.forEach((model: any) => {
+          console.log(`- ${model.name} (supports: ${model.supportedGenerationMethods?.join(', ') || 'N/A'})`);
+        });
+      }
+    } else {
+      console.log('Could not fetch models list');
+    }
+
     // Use Gemini 2.5 Flash with image capabilities
-    console.log('Using Gemini 2.5 Flash for image transformation...');
+    console.log('Using Gemini for image transformation...');
     
     // Extract base64 data
     const base64Data = image.includes('base64,') ? image.split('base64,')[1] : image;
@@ -167,7 +186,7 @@ Describe: gender, ethnicity, hair (color, style), facial features, expression, c
     };
 
     const response = await fetch(
-      `${GOOGLE_GEMINI_API_URL}/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
+      `${GOOGLE_GEMINI_API_URL}/gemini-1.5-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
