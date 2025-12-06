@@ -161,9 +161,7 @@ async function handleGeminiImagenTransform(
     const mimeType = image.match(/data:([^;]+);/)?.[1] || 'image/jpeg';
 
     // Create prompt for age transformation
-    const transformPrompt = `Analyze this person and create a detailed text prompt for an AI image generator to recreate them as a ${category.label} (aged ${category.ageRange}). ${category.prompt}
-
-Describe: gender, ethnicity, hair (color, style), facial features, expression, clothing, background, and age-specific characteristics (wrinkles, skin texture, etc.). Make it photorealistic and detailed.`;
+    const transformPrompt = `Describe this person for an AI image generator. Include: gender, ethnicity, hair (color/style), facial features, expression, clothing, background. Then describe how they would look at age ${category.ageRange} (${category.label}). ${category.prompt} Keep it under 100 words.`;
 
     const requestBody = {
       contents: [{
@@ -181,7 +179,8 @@ Describe: gender, ethnicity, hair (color, style), facial features, expression, c
       }],
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 1024,
+        maxOutputTokens: 2048,
+        responseModalities: ['TEXT'],
       }
     };
 
