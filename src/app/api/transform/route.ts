@@ -186,7 +186,7 @@ Describe: gender, ethnicity, hair (color, style), facial features, expression, c
     };
 
     const response = await fetch(
-      `${GOOGLE_GEMINI_API_URL}/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `${GOOGLE_GEMINI_API_URL}/gemini-2.5-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
