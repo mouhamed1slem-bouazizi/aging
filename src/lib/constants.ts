@@ -11,9 +11,9 @@ export const AI_MODELS: AIModelOption[] = [
   },
   {
     id: 'gemini-imagen',
-    name: 'Google Gemini Imagen 3',
-    description: 'High-quality image generation with Google AI',
-    provider: 'Google AI',
+    name: 'Google Gemini Enhanced',
+    description: 'AI-powered analysis + enhanced generation',
+    provider: 'Google AI + Pollinations',
     isFree: false,
     requiresApiKey: true,
   },
