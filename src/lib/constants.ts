@@ -1,4 +1,55 @@
-import { AgeCategoryOption } from '@/types';
+import { AgeCategoryOption, AIModelOption } from '@/types';
+
+export const AI_MODELS: AIModelOption[] = [
+  {
+    id: 'pollinations',
+    name: 'Pollinations.AI',
+    description: 'Free AI image generation (Default)',
+    provider: 'Pollinations.AI',
+    isFree: true,
+    requiresApiKey: false,
+  },
+  {
+    id: 'flux-2-pro',
+    name: 'Flux 2 Pro',
+    description: 'High-quality image generation',
+    provider: 'Black Forest Labs',
+    isFree: false,
+    requiresApiKey: true,
+  },
+  {
+    id: 'gemini-3-pro',
+    name: 'Gemini 3 Pro Image',
+    description: 'Advanced image generation',
+    provider: 'Google',
+    isFree: false,
+    requiresApiKey: true,
+  },
+  {
+    id: 'gpt-5-mini',
+    name: 'GPT-5 Image Mini',
+    description: 'Fast and efficient',
+    provider: 'OpenAI',
+    isFree: false,
+    requiresApiKey: true,
+  },
+  {
+    id: 'gpt-5',
+    name: 'GPT-5 Image',
+    description: 'Premium image generation',
+    provider: 'OpenAI',
+    isFree: false,
+    requiresApiKey: true,
+  },
+  {
+    id: 'gemini-2.5-flash',
+    name: 'Gemini 2.5 Flash Image',
+    description: 'Ultra-fast image generation',
+    provider: 'Google',
+    isFree: false,
+    requiresApiKey: true,
+  },
+];
 
 export const AGE_CATEGORIES: AgeCategoryOption[] = [
   {

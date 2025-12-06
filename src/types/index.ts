@@ -1,6 +1,18 @@
 // Age categories for transformation
 export type AgeCategory = 'baby' | 'young' | 'adult' | 'old' | 'elderly';
 
+// AI Model types
+export type AIModel = 'pollinations' | 'flux-2-pro' | 'gemini-3-pro' | 'gpt-5-mini' | 'gpt-5' | 'gemini-2.5-flash';
+
+export interface AIModelOption {
+  id: AIModel;
+  name: string;
+  description: string;
+  provider: string;
+  isFree: boolean;
+  requiresApiKey: boolean;
+}
+
 export interface AgeCategoryOption {
   id: AgeCategory;
   label: string;
@@ -14,6 +26,7 @@ export interface AgeCategoryOption {
 export interface TransformRequest {
   image: string; // Base64 encoded image
   ageCategory: AgeCategory;
+  model?: AIModel; // Optional: defaults to pollinations
 }
 
 export interface TransformResponse {
@@ -29,9 +42,10 @@ export interface ImageState {
 }
 
 export interface AppState {
-  step: 'upload' | 'select-age' | 'processing' | 'result';
+  step: 'upload' | 'select-age' | 'select-model' | 'processing' | 'result';
   image: ImageState;
   selectedAge: AgeCategory | null;
+  selectedModel: AIModel | null;
   isLoading: boolean;
   error: string | null;
 }

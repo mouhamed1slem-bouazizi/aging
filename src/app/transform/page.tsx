@@ -7,16 +7,17 @@ import {
   CameraCapture,
   ImageUpload,
   AgeSelector,
+  ModelSelector,
   LoadingAnimation,
   ImageComparison,
   ResultActions,
   ErrorDisplay,
 } from '@/components';
-import { AgeCategory, TransformResponse } from '@/types';
+import { AgeCategory, AIModel, TransformResponse } from '@/types';
 import { AGE_CATEGORIES } from '@/lib/constants';
 import { compressImage } from '@/lib/utils';
 
-type Step = 'upload' | 'select-age' | 'processing' | 'result' | 'error';
+type Step = 'upload' | 'select-age' | 'select-model' | 'processing' | 'result' | 'error';
 
 export default function TransformPage() {
   const [step, setStep] = useState<Step>('upload');
@@ -24,6 +25,7 @@ export default function TransformPage() {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [transformedImage, setTransformedImage] = useState<string | null>(null);
   const [selectedAge, setSelectedAge] = useState<AgeCategory | null>(null);
+  const [selectedModel, setSelectedModel] = useState<AIModel>('pollinations'); // Default to free model
   const [error, setError] = useState<string | null>(null);
 
   const handleImageSelect = useCallback(async (imageSrc: string) => {
@@ -43,9 +45,15 @@ export default function TransformPage() {
 
   const handleAgeSelect = useCallback(async (age: AgeCategory) => {
     setSelectedAge(age);
+    // Move to model selection instead of processing directly
+    setStep('select-model');
+  }, []);
+
+  const handleModelSelect = useCallback(async (model: AIModel) => {
+    setSelectedModel(model);
     
-    if (!originalImage) {
-      setError('No image selected');
+    if (!originalImage || !selectedAge) {
+      setError('No image or age selected');
       setStep('error');
       return;
     }
@@ -61,7 +69,8 @@ export default function TransformPage() {
         },
         body: JSON.stringify({
           image: originalImage,
-          ageCategory: age,
+          ageCategory: selectedAge,
+          model: model,
         }),
       });
 
@@ -78,12 +87,13 @@ export default function TransformPage() {
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, selectedAge]);
 
   const handleStartOver = useCallback(() => {
     setOriginalImage(null);
     setTransformedImage(null);
     setSelectedAge(null);
+    setSelectedModel('pollinations');
     setError(null);
     setStep('upload');
   }, []);
@@ -99,22 +109,26 @@ export default function TransformPage() {
     if (step === 'select-age') {
       setStep('upload');
       setOriginalImage(null);
+    } else if (step === 'select-model') {
+      setStep('select-age');
     } else if (step === 'error') {
-      if (originalImage) {
+      if (selectedAge) {
+        setStep('select-model');
+      } else if (originalImage) {
         setStep('select-age');
       } else {
         setStep('upload');
       }
     }
-  }, [step, originalImage]);
+  }, [step, originalImage, selectedAge]);
 
   const handleRetry = useCallback(() => {
-    if (selectedAge && originalImage) {
-      handleAgeSelect(selectedAge);
+    if (selectedAge && originalImage && selectedModel) {
+      handleModelSelect(selectedModel);
     } else {
       handleGoBack();
     }
-  }, [selectedAge, originalImage, handleAgeSelect, handleGoBack]);
+  }, [selectedAge, originalImage, selectedModel, handleModelSelect, handleGoBack]);
 
   const getStepTitle = () => {
     switch (step) {
@@ -122,6 +136,8 @@ export default function TransformPage() {
         return 'Upload Your Photo';
       case 'select-age':
         return 'Select Age';
+      case 'select-model':
+        return 'Choose AI Model';
       case 'processing':
         return 'Processing';
       case 'result':
@@ -140,7 +156,7 @@ export default function TransformPage() {
       <div className="sticky top-16 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            {(step === 'select-age' || step === 'error') && (
+            {(step === 'select-age' || step === 'select-model' || step === 'error') && (
               <button
                 onClick={handleGoBack}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -154,6 +170,7 @@ export default function TransformPage() {
                 <p className="text-sm text-gray-500">
                   {step === 'upload' && 'Take a selfie or upload a photo'}
                   {step === 'select-age' && 'Choose your desired age'}
+                  {step === 'select-model' && 'Pick the AI model for transformation'}
                   {step === 'result' && 'Your transformation is ready!'}
                 </p>
               )}
@@ -162,11 +179,11 @@ export default function TransformPage() {
 
           {/* Progress indicator */}
           <div className="flex gap-2 mt-4">
-            {['upload', 'select-age', 'result'].map((s, index) => (
+            {['upload', 'select-age', 'select-model', 'result'].map((s, index) => (
               <div
                 key={s}
                 className={`h-1 flex-1 rounded-full transition-colors ${
-                  ['upload', 'select-age', 'processing', 'result'].indexOf(step) >= index
+                  ['upload', 'select-age', 'select-model', 'processing', 'result'].indexOf(step) >= index
                     ? 'bg-gradient-to-r from-purple-500 to-pink-500'
                     : 'bg-gray-200'
                 }`}
@@ -207,6 +224,18 @@ export default function TransformPage() {
                 onSelect={handleAgeSelect}
                 originalImage={originalImage}
               />
+            </motion.div>
+          )}
+
+          {/* Model Selection Step */}
+          {step === 'select-model' && (
+            <motion.div
+              key="select-model"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+            >
+              <ModelSelector onSelect={handleModelSelect} />
             </motion.div>
           )}
 
