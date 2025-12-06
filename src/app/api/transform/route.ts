@@ -180,7 +180,6 @@ async function handleGeminiImagenTransform(
       generationConfig: {
         temperature: 0.7,
         maxOutputTokens: 2048,
-        responseModalities: ['TEXT'],
       }
     };
 
