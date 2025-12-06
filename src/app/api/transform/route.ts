@@ -160,8 +160,19 @@ async function handleGeminiImagenTransform(
     const base64Data = image.includes('base64,') ? image.split('base64,')[1] : image;
     const mimeType = image.match(/data:([^;]+);/)?.[1] || 'image/jpeg';
 
-    // Create prompt for age transformation
-    const transformPrompt = `Describe this person for an AI image generator. Include: gender, ethnicity, hair (color/style), facial features, expression, clothing, background. Then describe how they would look at age ${category.ageRange} (${category.label}). ${category.prompt} Keep it under 100 words.`;
+    // Create prompt for age transformation - emphasize preserving identity
+    const transformPrompt = `Analyze this person's UNIQUE facial features that identify them: exact face shape, bone structure, eye shape and color, nose shape, mouth shape, skin tone, and distinctive features.
+
+Then create a detailed prompt for AI image generation showing this SAME person at age ${category.ageRange} (${category.label}).
+
+IMPORTANT RULES:
+- PRESERVE: Face shape, eye color/shape, nose shape, mouth shape, skin tone, facial bone structure
+- CHANGE for age: Add/remove wrinkles, change skin texture, adjust hair (graying/thinning for older, fuller for younger)
+- For BABY/YOUNG: Remove facial hair completely, softer features, smoother skin
+- For OLD/ELDERLY: Add wrinkles, age spots, possibly gray/white hair, keep facial structure
+- ${category.prompt}
+
+Keep description under 100 words, focus on maintaining the person's core identity while showing realistic age changes.`;
 
     const requestBody = {
       contents: [{
@@ -219,9 +230,10 @@ async function handleGeminiImagenTransform(
     }
 
     // Use the Gemini description to generate image with Pollinations
-    const imagePrompt = `${description}. Professional photo quality, natural lighting, photorealistic, high detail, 4k`;
+    // Enhance the prompt to emphasize identity preservation
+    const imagePrompt = `${description}. IMPORTANT: Maintain the exact same person's unique facial features and bone structure. Professional portrait photography, natural lighting, photorealistic, high detail, 4k quality, same individual at different age.`;
     const encodedPrompt = encodeURIComponent(imagePrompt);
-    const imageUrl = `${POLLINATIONS_API_URL}/${encodedPrompt}?width=1024&height=1024&seed=${Date.now()}&nologo=true&enhance=true`;
+    const imageUrl = `${POLLINATIONS_API_URL}/${encodedPrompt}?width=1024&height=1024&seed=${Date.now()}&nologo=true&enhance=true&model=turbo`;
 
     console.log('Generating image with Pollinations...');
     
