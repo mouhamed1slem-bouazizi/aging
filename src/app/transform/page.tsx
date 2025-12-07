@@ -7,53 +7,57 @@ import {
   CameraCapture,
   ImageUpload,
   AgeSelector,
-  ModelSelector,
+  GenderSelector,
+  TransformationTypeSelector,
   LoadingAnimation,
   ImageComparison,
   ResultActions,
   ErrorDisplay,
+  ProtectedRoute,
 } from '@/components';
-import { AgeCategory, AIModel, TransformResponse } from '@/types';
-import { AGE_CATEGORIES } from '@/lib/constants';
+import { AgeCategory, GenderOption, TransformationType, TransformResponse } from '@/types';
+import { AGE_CATEGORIES, GENDER_OPTIONS } from '@/lib/constants';
 import { compressImage } from '@/lib/utils';
 
-type Step = 'upload' | 'select-age' | 'select-model' | 'processing' | 'result' | 'error';
+type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'processing' | 'result' | 'error';
 
 export default function TransformPage() {
   const [step, setStep] = useState<Step>('upload');
   const [showCamera, setShowCamera] = useState(false);
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [transformedImage, setTransformedImage] = useState<string | null>(null);
+  const [transformationType, setTransformationType] = useState<TransformationType | null>(null);
   const [selectedAge, setSelectedAge] = useState<AgeCategory | null>(null);
-  const [selectedModel, setSelectedModel] = useState<AIModel>('pollinations'); // Default to free model
+  const [selectedGender, setSelectedGender] = useState<GenderOption | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleImageSelect = useCallback(async (imageSrc: string) => {
     try {
-      // Compress image for faster processing
+      // Compress image for faster processing (max 4MB for AILabAPI)
       const compressed = await compressImage(imageSrc, 1024, 0.85);
       setOriginalImage(compressed);
-      setStep('select-age');
+      setStep('select-type');
       setShowCamera(false);
     } catch (err) {
       console.error('Image compression error:', err);
       setOriginalImage(imageSrc);
-      setStep('select-age');
+      setStep('select-type');
       setShowCamera(false);
     }
   }, []);
 
-  const handleAgeSelect = useCallback(async (age: AgeCategory) => {
-    setSelectedAge(age);
-    // Move to model selection instead of processing directly
-    setStep('select-model');
+  const handleTypeSelect = useCallback((type: TransformationType) => {
+    setTransformationType(type);
+    if (type === 'age') {
+      setStep('select-age');
+    } else {
+      setStep('select-gender');
+    }
   }, []);
 
-  const handleModelSelect = useCallback(async (model: AIModel) => {
-    setSelectedModel(model);
-    
-    if (!originalImage || !selectedAge) {
-      setError('No image or age selected');
+  const handleTransform = useCallback(async (type: TransformationType, value: AgeCategory | GenderOption) => {
+    if (!originalImage) {
+      setError('No image selected');
       setStep('error');
       return;
     }
@@ -69,8 +73,8 @@ export default function TransformPage() {
         },
         body: JSON.stringify({
           image: originalImage,
-          ageCategory: selectedAge,
-          model: model,
+          transformationType: type,
+          ...(type === 'age' ? { ageCategory: value } : { gender: value }),
         }),
       });
 
@@ -87,13 +91,24 @@ export default function TransformPage() {
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage, selectedAge]);
+  }, [originalImage]);
+
+  const handleAgeSelect = useCallback(async (age: AgeCategory) => {
+    setSelectedAge(age);
+    await handleTransform('age', age);
+  }, [handleTransform]);
+
+  const handleGenderSelect = useCallback(async (gender: GenderOption) => {
+    setSelectedGender(gender);
+    await handleTransform('gender', gender);
+  }, [handleTransform]);
 
   const handleStartOver = useCallback(() => {
     setOriginalImage(null);
     setTransformedImage(null);
+    setTransformationType(null);
     setSelectedAge(null);
-    setSelectedModel('pollinations');
+    setSelectedGender(null);
     setError(null);
     setStep('upload');
   }, []);
@@ -101,48 +116,66 @@ export default function TransformPage() {
   const handleTryAnother = useCallback(() => {
     setTransformedImage(null);
     setSelectedAge(null);
+    setSelectedGender(null);
     setError(null);
-    setStep('select-age');
+    setStep('select-type');
   }, []);
 
   const handleGoBack = useCallback(() => {
-    if (step === 'select-age') {
+    if (step === 'select-type') {
       setStep('upload');
       setOriginalImage(null);
-    } else if (step === 'select-model') {
-      setStep('select-age');
+      setTransformationType(null);
+    } else if (step === 'select-age' || step === 'select-gender') {
+      setStep('select-type');
+      setSelectedAge(null);
+      setSelectedGender(null);
     } else if (step === 'error') {
-      if (selectedAge) {
-        setStep('select-model');
+      if (transformationType) {
+        if (transformationType === 'age') {
+          setStep('select-age');
+        } else {
+          setStep('select-gender');
+        }
       } else if (originalImage) {
-        setStep('select-age');
+        setStep('select-type');
       } else {
         setStep('upload');
       }
     }
-  }, [step, originalImage, selectedAge]);
+  }, [step, originalImage, transformationType]);
 
   const handleRetry = useCallback(() => {
-    if (selectedAge && originalImage && selectedModel) {
-      handleModelSelect(selectedModel);
+    if (transformationType === 'age' && selectedAge && originalImage) {
+      handleAgeSelect(selectedAge);
+    } else if (transformationType === 'gender' && selectedGender && originalImage) {
+      handleGenderSelect(selectedGender);
     } else {
       handleGoBack();
     }
-  }, [selectedAge, originalImage, selectedModel, handleModelSelect, handleGoBack]);
+  }, [transformationType, selectedAge, selectedGender, originalImage, handleAgeSelect, handleGenderSelect, handleGoBack]);
 
   const getStepTitle = () => {
     switch (step) {
       case 'upload':
         return 'Upload Your Photo';
+      case 'select-type':
+        return 'Select Transformation';
       case 'select-age':
         return 'Select Age';
-      case 'select-model':
-        return 'Choose AI Model';
+      case 'select-gender':
+        return 'Select Gender';
       case 'processing':
         return 'Processing';
       case 'result':
-        const category = AGE_CATEGORIES.find((c) => c.id === selectedAge);
-        return `Your ${category?.label} Look`;
+        if (transformationType === 'age' && selectedAge) {
+          const category = AGE_CATEGORIES.find((c) => c.id === selectedAge);
+          return `Your ${category?.label} Look`;
+        } else if (transformationType === 'gender' && selectedGender) {
+          const genderOption = GENDER_OPTIONS.find((g) => g.id === selectedGender);
+          return `Your ${genderOption?.label} Look`;
+        }
+        return 'Your Transformation';
       case 'error':
         return 'Error';
       default:
@@ -150,13 +183,23 @@ export default function TransformPage() {
     }
   };
 
+  const getResultLabel = () => {
+    if (transformationType === 'age' && selectedAge) {
+      return AGE_CATEGORIES.find((c) => c.id === selectedAge)?.label || 'Transformed';
+    } else if (transformationType === 'gender' && selectedGender) {
+      return GENDER_OPTIONS.find((g) => g.id === selectedGender)?.label || 'Transformed';
+    }
+    return 'Transformed';
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Header */}
       <div className="sticky top-16 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            {(step === 'select-age' || step === 'select-model' || step === 'error') && (
+            {(step === 'select-type' || step === 'select-age' || step === 'select-gender' || step === 'error') && (
               <button
                 onClick={handleGoBack}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -169,8 +212,9 @@ export default function TransformPage() {
               {step !== 'processing' && step !== 'error' && (
                 <p className="text-sm text-gray-500">
                   {step === 'upload' && 'Take a selfie or upload a photo'}
+                  {step === 'select-type' && 'Choose age or gender transformation'}
                   {step === 'select-age' && 'Choose your desired age'}
-                  {step === 'select-model' && 'Pick the AI model for transformation'}
+                  {step === 'select-gender' && 'Choose your desired gender'}
                   {step === 'result' && 'Your transformation is ready!'}
                 </p>
               )}
@@ -179,11 +223,11 @@ export default function TransformPage() {
 
           {/* Progress indicator */}
           <div className="flex gap-2 mt-4">
-            {['upload', 'select-age', 'select-model', 'result'].map((s, index) => (
+            {['upload', 'select-type', 'select-age', 'result'].map((s, index) => (
               <div
                 key={s}
                 className={`h-1 flex-1 rounded-full transition-colors ${
-                  ['upload', 'select-age', 'select-model', 'processing', 'result'].indexOf(step) >= index
+                  ['upload', 'select-type', 'select-age', 'select-gender', 'processing', 'result'].indexOf(step) >= index
                     ? 'bg-gradient-to-r from-purple-500 to-pink-500'
                     : 'bg-gray-200'
                 }`}
@@ -211,6 +255,18 @@ export default function TransformPage() {
             </motion.div>
           )}
 
+          {/* Type Selection Step */}
+          {step === 'select-type' && originalImage && (
+            <motion.div
+              key="select-type"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+            >
+              <TransformationTypeSelector onTypeSelect={handleTypeSelect} />
+            </motion.div>
+          )}
+
           {/* Age Selection Step */}
           {step === 'select-age' && originalImage && (
             <motion.div
@@ -227,27 +283,29 @@ export default function TransformPage() {
             </motion.div>
           )}
 
-          {/* Model Selection Step */}
-          {step === 'select-model' && (
+          {/* Gender Selection Step */}
+          {step === 'select-gender' && originalImage && (
             <motion.div
-              key="select-model"
+              key="select-gender"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
             >
-              <ModelSelector onSelect={handleModelSelect} />
+              <GenderSelector onGenderSelect={handleGenderSelect} />
             </motion.div>
           )}
 
           {/* Processing Step */}
-          {step === 'processing' && selectedAge && (
+          {step === 'processing' && (selectedAge || selectedGender) && (
             <motion.div
               key="processing"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
             >
-              <LoadingAnimation ageCategory={selectedAge} />
+              <LoadingAnimation 
+                ageCategory={selectedAge || undefined} 
+              />
             </motion.div>
           )}
 
@@ -264,7 +322,7 @@ export default function TransformPage() {
                 originalImage={originalImage}
                 transformedImage={transformedImage}
                 originalLabel="Original"
-                transformedLabel={AGE_CATEGORIES.find((c) => c.id === selectedAge)?.label || 'Transformed'}
+                transformedLabel={getResultLabel()}
               />
               <ResultActions
                 transformedImage={transformedImage}
@@ -301,6 +359,7 @@ export default function TransformPage() {
           />
         )}
       </AnimatePresence>
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }

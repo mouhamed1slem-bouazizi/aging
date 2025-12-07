@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { Header, Footer } from '@/components';
 import { APP_CONFIG } from '@/lib/constants';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -15,7 +16,18 @@ export const metadata: Metadata = {
     template: `%s | ${APP_CONFIG.name}`,
   },
   description: APP_CONFIG.description,
-  keywords: ['age transformation', 'AI photo', 'face aging', 'young filter', 'old filter'],
+  keywords: [
+    'AI photo editor',
+    'portrait transformation',
+    'age transformation',
+    'gender swap',
+    'beauty filter',
+    'virtual try-on',
+    'face editing',
+    'AI portrait',
+    'photo effects',
+    'image enhancement',
+  ],
   authors: [{ name: APP_CONFIG.name }],
   openGraph: {
     type: 'website',
@@ -46,11 +58,13 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${inter.className} antialiased bg-white text-gray-900`}>
-        <Header />
-        <main className="min-h-screen pt-16">
-          {children}
-        </main>
-        <Footer />
+        <AuthProvider>
+          <Header />
+          <main className="min-h-screen pt-16">
+            {children}
+          </main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

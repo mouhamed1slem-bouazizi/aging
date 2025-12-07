@@ -5,11 +5,11 @@ import { AGE_CATEGORIES } from '@/lib/constants';
 import { AgeCategory } from '@/types';
 
 interface LoadingAnimationProps {
-  ageCategory: AgeCategory;
+  ageCategory?: AgeCategory;
 }
 
 export default function LoadingAnimation({ ageCategory }: LoadingAnimationProps) {
-  const category = AGE_CATEGORIES.find((c) => c.id === ageCategory);
+  const category = ageCategory ? AGE_CATEGORIES.find((c) => c.id === ageCategory) : null;
 
   const loadingMessages = [
     'Analyzing facial features...',
@@ -83,7 +83,7 @@ export default function LoadingAnimation({ ageCategory }: LoadingAnimationProps)
         className="text-center"
       >
         <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-          Transforming to {category?.label}
+          {category ? `Transforming to ${category.label}` : 'Transforming...'}
         </h2>
         
         {/* Animated loading text */}

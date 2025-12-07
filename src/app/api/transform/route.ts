@@ -1,20 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AGE_CATEGORIES } from '@/lib/constants';
-import { AgeCategory, AIModel, TransformResponse } from '@/types';
+import { AGE_CATEGORIES, AILAB_API_URL, GENDER_OPTIONS } from '@/lib/constants';
+import { AgeCategory, GenderOption, TransformationType, TransformResponse } from '@/types';
 
-export const maxDuration = 120;
-
-const POLLINATIONS_API_URL = 'https://image.pollinations.ai/prompt';
-// Google AI Gemini API - v1 endpoint
-const GOOGLE_GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models';
+export const maxDuration = 60;
 
 export async function POST(request: NextRequest): Promise<NextResponse<TransformResponse>> {
   try {
     const body = await request.json();
-    const { image, ageCategory, model = 'pollinations' } = body as { 
+    const { image, transformationType, ageCategory, gender } = body as { 
       image: string; 
-      ageCategory: AgeCategory;
-      model?: AIModel;
+      transformationType: TransformationType;
+      ageCategory?: AgeCategory;
+      gender?: GenderOption;
     };
 
     // Validate inputs
@@ -25,39 +22,146 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       );
     }
 
-    if (!ageCategory) {
+    if (!transformationType) {
       return NextResponse.json(
-        { success: false, error: 'No age category selected' },
+        { success: false, error: 'No transformation type selected' },
         { status: 400 }
       );
     }
 
-    const category = AGE_CATEGORIES.find((c) => c.id === ageCategory);
-    if (!category) {
+    // Check for AILabAPI key
+    const ailabApiKey = process.env.AILAB_API_KEY;
+    if (!ailabApiKey) {
       return NextResponse.json(
-        { success: false, error: 'Invalid age category' },
+        { success: false, error: 'AILab API key not configured. Please add AILAB_API_KEY to environment variables.' },
         { status: 400 }
       );
     }
 
-    console.log(`Using AI model: ${model} for age category: ${category.label}`);
+    let actionType: string;
+    let target: string | undefined;
 
-    // Use Pollinations.AI (free, no API key required)
-    if (model === 'pollinations') {
-      return await handlePollinationsTransform(image, category);
+    // Handle age transformation
+    if (transformationType === 'age') {
+      if (!ageCategory) {
+        return NextResponse.json(
+          { success: false, error: 'No age category selected' },
+          { status: 400 }
+        );
+      }
+
+      const category = AGE_CATEGORIES.find((c) => c.id === ageCategory);
+      if (!category) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid age category' },
+          { status: 400 }
+        );
+      }
+
+      actionType = 'V2_AGE';
+      target = category.targetAge.toString();
+      console.log(`Transforming to age: ${category.targetAge} (${category.label})`);
+    }
+    // Handle gender transformation
+    else if (transformationType === 'gender') {
+      if (!gender) {
+        return NextResponse.json(
+          { success: false, error: 'No gender selected' },
+          { status: 400 }
+        );
+      }
+
+      const genderOption = GENDER_OPTIONS.find((g) => g.id === gender);
+      if (!genderOption) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid gender option' },
+          { status: 400 }
+        );
+      }
+
+      actionType = 'V2_GENDER';
+      target = genderOption.targetValue.toString();
+      console.log(`Transforming to gender: ${genderOption.label}`);
+    } else {
+      return NextResponse.json(
+        { success: false, error: 'Invalid transformation type' },
+        { status: 400 }
+      );
     }
 
-    // Use Google Gemini Imagen 3
-    if (model === 'gemini-imagen') {
-      return await handleGeminiImagenTransform(image, category);
-    }
-
-    // Fallback
-    return NextResponse.json(
-      { success: false, error: 'Invalid model selected' },
-      { status: 400 }
-    );
+    // Extract base64 data and convert to buffer
+    const base64Data = image.includes('base64,') ? image.split('base64,')[1] : image;
+    const imageBuffer = Buffer.from(base64Data, 'base64');
     
+    // Determine mime type from data URL or default to jpeg
+    const mimeType = image.match(/data:([^;]+);/)?.[1] || 'image/jpeg';
+    const extension = mimeType.split('/')[1] || 'jpg';
+
+    // Create FormData for the API request
+    const formData = new FormData();
+    const blob = new Blob([imageBuffer], { type: mimeType });
+    formData.append('image', blob, `photo.${extension}`);
+    formData.append('action_type', actionType);
+    if (target) {
+      formData.append('target', target);
+    }
+
+    // Call AILabAPI directly (new API doesn't use RapidAPI)
+    const response = await fetch(AILAB_API_URL, {
+      method: 'POST',
+      headers: {
+        'ailabapi-api-key': ailabApiKey,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('AILabAPI error:', response.status, errorText);
+      return NextResponse.json(
+        { success: false, error: `API error: ${response.status}` },
+        { status: response.status }
+      );
+    }
+
+    const data = await response.json();
+    console.log('AILabAPI response received');
+
+    // Check for API error in response
+    if (data.error_code !== 0) {
+      console.error('API returned error:', data);
+      return NextResponse.json(
+        { success: false, error: data.error_msg || 'Transformation failed' },
+        { status: 400 }
+      );
+    }
+
+    // Extract the result image (now returns base64 directly)
+    let transformedImage: string | undefined;
+
+    if (data.result?.image) {
+      const resultImage = data.result.image;
+      // The API returns base64 without prefix, add it
+      transformedImage = resultImage.startsWith('data:') 
+        ? resultImage 
+        : `data:image/jpeg;base64,${resultImage}`;
+    }
+
+    if (!transformedImage) {
+      console.error('No image in response:', JSON.stringify(data, null, 2));
+      return NextResponse.json(
+        { success: false, error: 'No image was generated' },
+        { status: 422 }
+      );
+    }
+
+    console.log('Successfully transformed image');
+
+    return NextResponse.json({
+      success: true,
+      transformedImage,
+    });
+
   } catch (error) {
     console.error('Transform API error:', error);
     return NextResponse.json(
@@ -67,194 +171,5 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       },
       { status: 500 }
     );
-  }
-}
-
-// Handle Pollinations.AI transformation (free)
-async function handlePollinationsTransform(
-  image: string, 
-  category: { label: string; ageRange: string; prompt: string }
-): Promise<NextResponse<TransformResponse>> {
-  try {
-    // Extract base64 data if it's a data URL
-    const base64Data = image.includes('base64,') ? image.split('base64,')[1] : image;
-    
-    // Create a detailed prompt for age transformation
-    const prompt = encodeURIComponent(
-      `A photorealistic portrait of a person aged ${category.ageRange} (${category.label}). ` +
-      `${category.prompt} High quality, professional photography, detailed facial features, ` +
-      `natural lighting, 4k resolution`
-    );
-
-    // Pollinations.AI generates images from text prompts
-    // Note: It doesn't take input images, so this will generate a new aged person
-    const imageUrl = `${POLLINATIONS_API_URL}/${prompt}?width=1024&height=1024&seed=${Date.now()}&nologo=true`;
-
-    console.log('Generating image with Pollinations.AI...');
-    
-    // Fetch the generated image
-    const response = await fetch(imageUrl);
-    
-    if (!response.ok) {
-      throw new Error(`Pollinations API error: ${response.status}`);
-    }
-
-    // Convert to base64
-    const imageBuffer = await response.arrayBuffer();
-    const base64Image = Buffer.from(imageBuffer).toString('base64');
-    const transformedImage = `data:image/png;base64,${base64Image}`;
-
-    console.log('Successfully generated image with Pollinations.AI');
-
-    return NextResponse.json({
-      success: true,
-      transformedImage,
-    });
-  } catch (error) {
-    console.error('Pollinations transformation error:', error);
-    throw error;
-  }
-}
-
-// Handle Google Gemini transformation with image generation
-async function handleGeminiImagenTransform(
-  image: string,
-  category: { label: string; ageRange: string; prompt: string }
-): Promise<NextResponse<TransformResponse>> {
-  const apiKey = process.env.GOOGLE_AI_API_KEY;
-  
-  if (!apiKey) {
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Google AI API key not configured. Please add GOOGLE_AI_API_KEY to environment variables.' 
-      },
-      { status: 400 }
-    );
-  }
-
-  try {
-    // First, list all available models to see what we can use
-    console.log('Fetching list of available Gemini models...');
-    const listModelsResponse = await fetch(
-      `${GOOGLE_GEMINI_API_URL}?key=${apiKey}`,
-      { method: 'GET' }
-    );
-    
-    if (listModelsResponse.ok) {
-      const modelsList = await listModelsResponse.json();
-      console.log('Available Gemini models:');
-      if (modelsList.models) {
-        modelsList.models.forEach((model: any) => {
-          console.log(`- ${model.name} (supports: ${model.supportedGenerationMethods?.join(', ') || 'N/A'})`);
-        });
-      }
-    } else {
-      console.log('Could not fetch models list');
-    }
-
-    // Use Gemini 2.5 Flash with image capabilities
-    console.log('Using Gemini for image transformation...');
-    
-    // Extract base64 data
-    const base64Data = image.includes('base64,') ? image.split('base64,')[1] : image;
-    const mimeType = image.match(/data:([^;]+);/)?.[1] || 'image/jpeg';
-
-    // Create prompt for age transformation - emphasize preserving identity
-    const transformPrompt = `Analyze this person's UNIQUE facial features that identify them: exact face shape, bone structure, eye shape and color, nose shape, mouth shape, skin tone, and distinctive features.
-
-Then create a detailed prompt for AI image generation showing this SAME person at age ${category.ageRange} (${category.label}).
-
-IMPORTANT RULES:
-- PRESERVE: Face shape, eye color/shape, nose shape, mouth shape, skin tone, facial bone structure
-- CHANGE for age: Add/remove wrinkles, change skin texture, adjust hair (graying/thinning for older, fuller for younger)
-- For BABY/YOUNG: Remove facial hair completely, softer features, smoother skin
-- For OLD/ELDERLY: Add wrinkles, age spots, possibly gray/white hair, keep facial structure
-- ${category.prompt}
-
-Keep description under 100 words, focus on maintaining the person's core identity while showing realistic age changes.`;
-
-    const requestBody = {
-      contents: [{
-        parts: [
-          {
-            inline_data: {
-              mime_type: mimeType,
-              data: base64Data
-            }
-          },
-          {
-            text: transformPrompt
-          }
-        ]
-      }],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 2048,
-      }
-    };
-
-    const response = await fetch(
-      `${GOOGLE_GEMINI_API_URL}/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error('Gemini API error:', response.status, errorData);
-      throw new Error(`Gemini API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log('Gemini response received:', JSON.stringify(data, null, 2));
-    
-    let description = '';
-    
-    // Try multiple ways to extract the text response
-    if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-      description = data.candidates[0].content.parts[0].text;
-      console.log('Gemini generated description:', description.substring(0, 150) + '...');
-    } else if (data.candidates?.[0]?.output) {
-      description = data.candidates[0].output;
-      console.log('Gemini generated output:', description.substring(0, 150) + '...');
-    } else if (data.text) {
-      description = data.text;
-      console.log('Gemini generated text:', description.substring(0, 150) + '...');
-    } else {
-      console.error('Could not find description in response structure:', JSON.stringify(data, null, 2));
-      throw new Error('No description generated by Gemini');
-    }
-
-    // Use the Gemini description to generate image with Pollinations
-    // Enhance the prompt to emphasize identity preservation
-    const imagePrompt = `${description}. IMPORTANT: Maintain the exact same person's unique facial features and bone structure. Professional portrait photography, natural lighting, photorealistic, high detail, 4k quality, same individual at different age.`;
-    const encodedPrompt = encodeURIComponent(imagePrompt);
-    const imageUrl = `${POLLINATIONS_API_URL}/${encodedPrompt}?width=1024&height=1024&seed=${Date.now()}&nologo=true&enhance=true&model=turbo`;
-
-    console.log('Generating image with Pollinations...');
-    
-    const imageResponse = await fetch(imageUrl);
-    
-    if (!imageResponse.ok) {
-      throw new Error(`Image generation error: ${imageResponse.status}`);
-    }
-
-    const imageBuffer = await imageResponse.arrayBuffer();
-    const base64Image = Buffer.from(imageBuffer).toString('base64');
-    const transformedImage = `data:image/png;base64,${base64Image}`;
-
-    console.log('Successfully generated aged image');
-
-    return NextResponse.json({
-      success: true,
-      transformedImage,
-    });
-  } catch (error) {
-    console.error('Gemini transformation error:', error);
-    throw error;
   }
 }

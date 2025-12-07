@@ -1,79 +1,86 @@
-import { AgeCategoryOption, AIModelOption } from '@/types';
+import { AgeCategoryOption, GenderOptionData } from '@/types';
 
-export const AI_MODELS: AIModelOption[] = [
-  {
-    id: 'pollinations',
-    name: 'Pollinations.AI',
-    description: 'Free AI image generation (No API key needed)',
-    provider: 'Pollinations.AI',
-    isFree: true,
-    requiresApiKey: false,
-  },
-  {
-    id: 'gemini-imagen',
-    name: 'Google Gemini Enhanced',
-    description: 'AI-powered analysis + enhanced generation',
-    provider: 'Google AI + Pollinations',
-    isFree: false,
-    requiresApiKey: true,
-  },
-];
+// AILabAPI endpoint for face attribute editing (direct, not through RapidAPI)
+export const AILAB_API_URL = 'https://www.ailabapi.com/api/portrait/effects/face-attribute-editing';
 
 export const AGE_CATEGORIES: AgeCategoryOption[] = [
   {
     id: 'baby',
     label: 'Baby',
     description: 'Transform to infant look',
-    ageRange: '0-2 years',
+    ageRange: '1-3 years',
     icon: '👶',
-    prompt: 'Transform this person to look like a baby, approximately 1-2 years old. Keep facial features recognizable but make them appear as an adorable infant with baby-like proportions, soft skin, and innocent expression.',
+    targetAge: 2,
+  },
+  {
+    id: 'child',
+    label: 'Child',
+    description: 'Transform to child look',
+    ageRange: '8-12 years',
+    icon: '🧒',
+    targetAge: 10,
   },
   {
     id: 'young',
-    label: 'Young',
+    label: 'Young Adult',
     description: 'Transform to young adult',
-    ageRange: '18-25 years',
+    ageRange: '20-25 years',
     icon: '🧑',
-    prompt: 'Transform this person to look like a young adult, approximately 18-25 years old. Show youthful skin, energetic appearance, and vibrant features while maintaining recognizable facial characteristics.',
+    targetAge: 22,
   },
   {
     id: 'adult',
     label: 'Adult',
     description: 'Transform to middle-aged',
-    ageRange: '35-45 years',
+    ageRange: '40-50 years',
     icon: '👨',
-    prompt: 'Transform this person to look like a mature adult, approximately 35-45 years old. Show subtle signs of maturity, confident appearance, and refined features while maintaining recognizable facial characteristics.',
+    targetAge: 45,
   },
   {
     id: 'old',
-    label: 'Old',
+    label: 'Senior',
     description: 'Transform to senior look',
     ageRange: '60-70 years',
     icon: '👴',
-    prompt: 'Transform this person to look like a senior, approximately 60-70 years old. Show natural aging signs like wrinkles, gray hair, and wisdom in expression while maintaining recognizable facial characteristics.',
+    targetAge: 65,
   },
   {
     id: 'elderly',
     label: 'Elderly',
-    description: 'Transform to very aged look',
+    description: 'Transform to elderly look',
     ageRange: '80+ years',
     icon: '🧓',
-    prompt: 'Transform this person to look very elderly, approximately 80+ years old. Show pronounced aging features like deep wrinkles, white hair, aged skin texture, and wise expression while maintaining recognizable facial characteristics.',
+    targetAge: 80,
+  },
+];
+
+export const GENDER_OPTIONS: GenderOptionData[] = [
+  {
+    id: 'male',
+    label: 'Male',
+    description: 'Transform to male appearance',
+    icon: '👨',
+    targetValue: 0,
+  },
+  {
+    id: 'female',
+    label: 'Female',
+    description: 'Transform to female appearance',
+    icon: '👩',
+    targetValue: 1,
   },
 ];
 
 export const ACCEPTED_IMAGE_TYPES = {
   'image/jpeg': ['.jpg', '.jpeg'],
   'image/png': ['.png'],
-  'image/webp': ['.webp'],
+  'image/bmp': ['.bmp'],
 };
 
-export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-
-export const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+export const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB (RapidAPI limit)
 
 export const APP_CONFIG = {
-  name: 'AgeFX',
-  tagline: 'See yourself at any age with AI',
-  description: 'Transform your photos with AI-powered age modification. See how you look as a baby, young adult, or elderly person.',
+  name: 'AI Portrait Studio',
+  tagline: 'Transform Your Photos with AI Magic',
+  description: 'Professional AI-powered photo editing suite. Transform your appearance with age modification, gender swap, beauty filters, virtual try-on, and 20+ creative effects.',
 };
