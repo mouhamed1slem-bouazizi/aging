@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { FaceFilterType } from '@/types';
 import { FACE_FILTERS } from '@/lib/constants';
 import { Sparkles } from 'lucide-react';
@@ -99,14 +100,18 @@ export default function FaceFilterSelector({
             {/* Gradient overlay on hover */}
             <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-            {/* Icon/Visual representation */}
-            <div className="relative mb-3">
-              <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-2xl">
-                {selectedCategory === 'natural' && '🌿'}
-                {selectedCategory === 'vintage' && '📷'}
-                {selectedCategory === 'vibrant' && '🌈'}
-                {selectedCategory === 'artistic' && '🎨'}
-              </div>
+            {/* Filter Preview Image */}
+            <div className="relative mb-3 overflow-hidden rounded-xl">
+              <Image
+                src={filter.previewUrl}
+                alt={filter.label}
+                width={200}
+                height={200}
+                className="w-full h-32 object-cover transition-transform duration-300 group-hover:scale-110"
+                unoptimized
+              />
+              {/* Overlay gradient for better text readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
             </div>
 
             {/* Label */}

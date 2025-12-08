@@ -73,32 +73,32 @@ export const GENDER_OPTIONS: GenderOptionData[] = [
 
 export const FACE_FILTERS: FaceFilterOption[] = [
   // Natural Filters
-  { id: 'white-tea', label: 'White Tea', description: 'Soft and natural look', resourceType: '10001', category: 'natural' },
-  { id: 'fair-skin', label: 'Fair Skin', description: 'Bright and fair complexion', resourceType: '10002', category: 'natural' },
-  { id: 'natural', label: 'Natural', description: 'Pure natural enhancement', resourceType: '10015', category: 'natural' },
-  { id: 'clarity', label: 'Clarity', description: 'Clear and crisp look', resourceType: '10008', category: 'natural' },
-  { id: 'crystal-clear', label: 'Crystal Clear', description: 'Ultra clear appearance', resourceType: '10009', category: 'natural' },
+  { id: 'white-tea', label: 'White Tea', description: 'Soft and natural look', resourceType: '10001', category: 'natural', previewUrl: 'https://ai-resource.ailabtools.com/face-filters/doc/ResultImage-1-10001-1.webp' },
+  { id: 'fair-skin', label: 'Fair Skin', description: 'Bright and fair complexion', resourceType: '10002', category: 'natural', previewUrl: 'https://ai-resource.ailabtools.com/face-filters/doc/ResultImage-1-10002-1.webp' },
+  { id: 'natural', label: 'Natural', description: 'Pure natural enhancement', resourceType: '10015', category: 'natural', previewUrl: 'https://ai-resource.ailabtools.com/face-filters/doc/ResultImage-1-10015-1.webp' },
+  { id: 'clarity', label: 'Clarity', description: 'Clear and crisp look', resourceType: '10008', category: 'natural', previewUrl: 'https://ai-resource.ailabtools.com/face-filters/doc/ResultImage-1-10008-1.webp' },
+  { id: 'crystal-clear', label: 'Crystal Clear', description: 'Ultra clear appearance', resourceType: '10009', category: 'natural', previewUrl: 'https://ai-resource.ailabtools.com/face-filters/doc/ResultImage-1-10009-1.webp' },
   
   // Vintage Filters
-  { id: 'tokyo', label: 'Tokyo', description: 'Japanese vintage style', resourceType: '10004', category: 'vintage' },
-  { id: 'muted-gray', label: 'Muted Gray', description: 'Subtle gray tones', resourceType: '10013', category: 'vintage' },
-  { id: 'black-white', label: 'Black & White', description: 'Classic monochrome', resourceType: '10017', category: 'vintage' },
-  { id: 'winter', label: 'Winter', description: 'Cool winter vibes', resourceType: '10020', category: 'vintage' },
+  { id: 'tokyo', label: 'Tokyo', description: 'Japanese vintage style', resourceType: '10004', category: 'vintage', previewUrl: 'https://ai-resource.ailabtools.com/face-filters/doc/ResultImage-1-10004-1.webp' },
+  { id: 'muted-gray', label: 'Muted Gray', description: 'Subtle gray tones', resourceType: '10013', category: 'vintage', previewUrl: 'https://ai-resource.ailabtools.com/face-filters/doc/ResultImage-1-10013-1.webp' },
+  { id: 'black-white', label: 'Black & White', description: 'Classic monochrome', resourceType: '10017', category: 'vintage', previewUrl: 'https://ai-resource.ailabtools.com/face-filters/doc/ResultImage-1-10017-1.webp' },
+  { id: 'winter', label: 'Winter', description: 'Cool winter vibes', resourceType: '10020', category: 'vintage', previewUrl: 'https://ai-resource.ailabtools.com/face-filters/doc/ResultImage-1-10020-1.webp' },
   
   // Vibrant Filters
-  { id: 'early-summer', label: 'Early Summer', description: 'Fresh summer vibes', resourceType: '10003', category: 'vibrant' },
-  { id: 'warm-sunshine', label: 'Warm Sunshine', description: 'Sunny and warm', resourceType: '10006', category: 'vibrant' },
-  { id: 'rose', label: 'Rose', description: 'Romantic rose tones', resourceType: '10007', category: 'vibrant' },
-  { id: 'sweet-mint', label: 'Sweet Mint', description: 'Fresh mint colors', resourceType: '10010', category: 'vibrant' },
-  { id: 'cherry-pudding', label: 'Cherry Pudding', description: 'Sweet pink tones', resourceType: '10014', category: 'vibrant' },
-  { id: 'fruit', label: 'Fruit', description: 'Fruity fresh colors', resourceType: '10018', category: 'vibrant' },
-  { id: 'love', label: 'Love', description: 'Romantic pink hues', resourceType: '10019', category: 'vibrant' },
+  { id: 'early-summer', label: 'Early Summer', description: 'Fresh summer vibes', resourceType: '10003', category: 'vibrant', previewUrl: 'https://ai-resource.ailabtools.com/face-filters/doc/ResultImage-1-10003-1.webp' },
+  { id: 'warm-sunshine', label: 'Warm Sunshine', description: 'Sunny and warm', resourceType: '10006', category: 'vibrant', previewUrl: 'https://ai-resource.ailabtools.com/face-filters/doc/ResultImage-1-10006-1.webp' },
+  { id: 'rose', label: 'Rose', description: 'Romantic rose tones', resourceType: '10007', category: 'vibrant', previewUrl: 'https://ai-resource.ailabtools.com/face-filters/doc/ResultImage-1-10007-1.webp' },
+  { id: 'sweet-mint', label: 'Sweet Mint', description: 'Fresh mint colors', resourceType: '10010', category: 'vibrant', previewUrl: 'https://ai-resource.ailabtools.com/face-filters/doc/ResultImage-1-10010-1.webp' },
+  { id: 'cherry-pudding', label: 'Cherry Pudding', description: 'Sweet pink tones', resourceType: '10014', category: 'vibrant', previewUrl: 'https://ai-resource.ailabtools.com/face-filters/doc/ResultImage-1-10014-1.webp' },
+  { id: 'fruit', label: 'Fruit', description: 'Fruity fresh colors', resourceType: '10018', category: 'vibrant', previewUrl: 'https://ai-resource.ailabtools.com/face-filters/doc/ResultImage-1-10018-1.webp' },
+  { id: 'love', label: 'Love', description: 'Romantic pink hues', resourceType: '10019', category: 'vibrant', previewUrl: 'https://ai-resource.ailabtools.com/face-filters/doc/ResultImage-1-10019-1.webp' },
   
   // Artistic Filters
-  { id: 'confession', label: 'Confession', description: 'Dreamy artistic look', resourceType: '10005', category: 'artistic' },
-  { id: 'elegance', label: 'Elegance', description: 'Elegant and refined', resourceType: '10016', category: 'artistic' },
-  { id: 'basic', label: 'Basic', description: 'Simple artistic touch', resourceType: '10011', category: 'artistic' },
-  { id: 'heartbeat', label: 'Heartbeat', description: 'Emotional and vivid', resourceType: '10012', category: 'artistic' },
+  { id: 'confession', label: 'Confession', description: 'Dreamy artistic look', resourceType: '10005', category: 'artistic', previewUrl: 'https://ai-resource.ailabtools.com/face-filters/doc/ResultImage-1-10005-1.webp' },
+  { id: 'elegance', label: 'Elegance', description: 'Elegant and refined', resourceType: '10016', category: 'artistic', previewUrl: 'https://ai-resource.ailabtools.com/face-filters/doc/ResultImage-1-10016-1.webp' },
+  { id: 'basic', label: 'Basic', description: 'Simple artistic touch', resourceType: '10011', category: 'artistic', previewUrl: 'https://ai-resource.ailabtools.com/face-filters/doc/ResultImage-1-10011-1.webp' },
+  { id: 'heartbeat', label: 'Heartbeat', description: 'Emotional and vivid', resourceType: '10012', category: 'artistic', previewUrl: 'https://ai-resource.ailabtools.com/face-filters/doc/ResultImage-1-10012-1.webp' },
 ];
 
 export const ACCEPTED_IMAGE_TYPES = {

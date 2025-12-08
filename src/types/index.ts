@@ -37,6 +37,7 @@ export interface FaceFilterOption {
   description: string;
   resourceType: string; // API resource_type code
   category: 'natural' | 'vintage' | 'vibrant' | 'artistic';
+  previewUrl: string; // Preview image URL
 }
 
 // API request/response types
