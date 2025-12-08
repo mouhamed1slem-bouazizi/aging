@@ -17,7 +17,11 @@ export type FaceFilterType =
   | 'tender-bud' | 'passion' | 'gradual-warmth' | 'breakfast' | 'white-tea-2'
   | 'fair' | 'holy' | 'forest' | 'surfing' | 'milk-coffee'
   | 'clear' | 'breeze' | 'sunset' | 'water-glow' | 'japanese-style'
-  | 'starlight' | 'sunshine' | 'falling-leaves' | 'vitality-2' | 'sweetheart';
+  | 'starlight' | 'sunshine' | 'falling-leaves' | 'vitality-2' | 'sweetheart'
+  | 'elegance-2' | 'spring' | 'rome' | 'green' | 'gentle-breeze'
+  | 'warm-heart' | 'seawater' | 'mysterious' | 'vintage-1' | 'vintage-2'
+  | 'snowy-peak' | 'sunlight' | 'floating-clouds' | 'flowing-colors' | 'film'
+  | 'nostalgia' | 'cheese' | 'butterfly';
 
 // Transformation type
 export type TransformationType = 'age' | 'gender' | 'filter';

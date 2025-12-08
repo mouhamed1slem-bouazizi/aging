@@ -131,6 +131,17 @@ export const FACE_FILTERS: FaceFilterOption[] = [
   { id: 'sunshine', label: 'Sunshine', description: 'Bright sunshine glow', resourceType: '10057', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10057-1.webp' },
   { id: 'vitality-2', label: 'Vitality', description: 'Fresh vital energy', resourceType: '10059', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10059-1.webp' },
   { id: 'sweetheart', label: 'Sweetheart', description: 'Sweet romantic pink', resourceType: '10060', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10060-1.webp' },
+  { id: 'spring', label: 'Spring', description: 'Fresh spring colors', resourceType: '10062', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10062-1.webp' },
+  { id: 'rome', label: 'Rome', description: 'Roman vintage elegance', resourceType: '10063', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10063-1.webp' },
+  { id: 'green', label: 'Green', description: 'Fresh green nature', resourceType: '10064', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10064-1.webp' },
+  { id: 'gentle-breeze', label: 'Gentle Breeze', description: 'Soft gentle wind', resourceType: '10065', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10065-1.webp' },
+  { id: 'warm-heart', label: 'Warm Heart', description: 'Warm heartfelt tones', resourceType: '10066', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10066-1.webp' },
+  { id: 'seawater', label: 'Seawater', description: 'Cool ocean blue', resourceType: '10067', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10067-1.webp' },
+  { id: 'snowy-peak', label: 'Snowy Peak', description: 'Crisp snowy mountain', resourceType: '10071', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10071-1.webp' },
+  { id: 'sunlight', label: 'Sunlight', description: 'Warm natural sunlight', resourceType: '10072', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10072-1.webp' },
+  { id: 'floating-clouds', label: 'Floating Clouds', description: 'Dreamy floating clouds', resourceType: '10073', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10073-1.webp' },
+  { id: 'flowing-colors', label: 'Flowing Colors', description: 'Colorful flowing blend', resourceType: '10074', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10074-1.webp' },
+  { id: 'butterfly', label: 'Butterfly', description: 'Delicate butterfly colors', resourceType: '10078', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10078-1.webp' },
   
   // Artistic Filters
   { id: 'confession', label: 'Confession', description: 'Dreamy artistic look', resourceType: '10005', category: 'artistic', previewUrl: '/pic/ResultImage-1-10005-1.webp' },
@@ -139,6 +150,13 @@ export const FACE_FILTERS: FaceFilterOption[] = [
   { id: 'heartbeat', label: 'Heartbeat', description: 'Emotional and vivid', resourceType: '10012', category: 'artistic', previewUrl: '/pic/ResultImage-1-10012-1.webp' },
   { id: 'street-snap', label: 'Street Snap', description: 'Urban street style', resourceType: '10027', category: 'artistic', previewUrl: '/pic/ResultImage-1-10027-1.webp' },
   { id: 'fashion', label: 'Fashion', description: 'Trendy fashion look', resourceType: '10034', category: 'artistic', previewUrl: '/pic/ResultImage-1-10034-1.webp' },
+  { id: 'elegance-2', label: 'Elegance', description: 'Refined elegance style', resourceType: '10061', category: 'artistic', previewUrl: '/pic/ResultImage-1-10061-1.webp' },
+  { id: 'mysterious', label: 'Mysterious', description: 'Dark mysterious mood', resourceType: '10068', category: 'artistic', previewUrl: '/pic/ResultImage-1-10068-1.webp' },
+  { id: 'vintage-1', label: 'Vintage 1', description: 'Classic vintage style', resourceType: '10069', category: 'artistic', previewUrl: '/pic/ResultImage-1-10069-1.webp' },
+  { id: 'vintage-2', label: 'Vintage 2', description: 'Retro vintage look', resourceType: '10070', category: 'artistic', previewUrl: '/pic/ResultImage-1-10070-1.webp' },
+  { id: 'film', label: 'Film', description: 'Classic film grain', resourceType: '10075', category: 'artistic', previewUrl: '/pic/ResultImage-1-10075-1.webp' },
+  { id: 'nostalgia', label: 'Nostalgia', description: 'Nostalgic memory tones', resourceType: '10076', category: 'artistic', previewUrl: '/pic/ResultImage-1-10076-1.webp' },
+  { id: 'cheese', label: 'Cheese', description: 'Warm cheese yellow', resourceType: '10077', category: 'artistic', previewUrl: '/pic/ResultImage-1-10077-1.webp' },
 ];
 
 export const ACCEPTED_IMAGE_TYPES = {
@@ -152,5 +170,5 @@ export const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB (RapidAPI limit)
 export const APP_CONFIG = {
   name: 'AI Portrait Studio',
   tagline: 'Transform Your Photos with AI Magic',
-  description: 'Professional AI-powered photo editing suite. Transform your appearance with age modification, gender swap, 60+ beauty filters, virtual try-on, and creative effects.',
+  description: 'Professional AI-powered photo editing suite. Transform your appearance with age modification, gender swap, 78 stunning beauty filters, virtual try-on, and creative effects.',
 };
