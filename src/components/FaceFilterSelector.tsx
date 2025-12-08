@@ -108,7 +108,6 @@ export default function FaceFilterSelector({
                 width={200}
                 height={200}
                 className="w-full h-32 object-cover transition-transform duration-300 group-hover:scale-110"
-                unoptimized
               />
               {/* Overlay gradient for better text readability */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
