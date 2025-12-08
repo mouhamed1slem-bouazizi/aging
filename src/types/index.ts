@@ -13,7 +13,11 @@ export type FaceFilterType =
   | 'photo' | 'summer' | 'fragrance' | 'charm' | 'throb'
   | 'beach' | 'street-snap' | 'sweet' | 'first-kiss' | 'afternoon'
   | 'vitality' | 'hazy' | 'joyful' | 'fashion' | 'bubbles'
-  | 'lemon' | 'cotton-candy' | 'brook' | 'beauty' | 'coffee';
+  | 'lemon' | 'cotton-candy' | 'brook' | 'beauty' | 'coffee'
+  | 'tender-bud' | 'passion' | 'gradual-warmth' | 'breakfast' | 'white-tea-2'
+  | 'fair' | 'holy' | 'forest' | 'surfing' | 'milk-coffee'
+  | 'clear' | 'breeze' | 'sunset' | 'water-glow' | 'japanese-style'
+  | 'starlight' | 'sunshine' | 'falling-leaves' | 'vitality-2' | 'sweetheart';
 
 // Transformation type
 export type TransformationType = 'age' | 'gender' | 'filter';

@@ -81,6 +81,12 @@ export const FACE_FILTERS: FaceFilterOption[] = [
   { id: 'photo', label: 'Photo', description: 'Professional photo finish', resourceType: '10021', category: 'natural', previewUrl: '/pic/ResultImage-1-10021-1.webp' },
   { id: 'hazy', label: 'Hazy', description: 'Soft hazy ambiance', resourceType: '10032', category: 'natural', previewUrl: '/pic/ResultImage-1-10032-1.webp' },
   { id: 'beauty', label: 'Beauty', description: 'Enhanced beauty look', resourceType: '10039', category: 'natural', previewUrl: '/pic/ResultImage-1-10039-1.webp' },
+  { id: 'tender-bud', label: 'Tender Bud', description: 'Delicate tender look', resourceType: '10041', category: 'natural', previewUrl: '/pic/ResultImage-1-10041-1.webp' },
+  { id: 'white-tea-2', label: 'White Tea', description: 'Refined white tea tone', resourceType: '10045', category: 'natural', previewUrl: '/pic/ResultImage-1-10045-1.webp' },
+  { id: 'fair', label: 'Fair', description: 'Fair and bright', resourceType: '10046', category: 'natural', previewUrl: '/pic/ResultImage-1-10046-1.webp' },
+  { id: 'holy', label: 'Holy', description: 'Pure and holy glow', resourceType: '10047', category: 'natural', previewUrl: '/pic/ResultImage-1-10047-1.webp' },
+  { id: 'clear', label: 'Clear', description: 'Crystal clear purity', resourceType: '10051', category: 'natural', previewUrl: '/pic/ResultImage-1-10051-1.webp' },
+  { id: 'water-glow', label: 'Water Glow', description: 'Glowing water effect', resourceType: '10054', category: 'natural', previewUrl: '/pic/ResultImage-1-10054-1.webp' },
   
   // Vintage Filters
   { id: 'tokyo', label: 'Tokyo', description: 'Japanese vintage style', resourceType: '10004', category: 'vintage', previewUrl: '/pic/ResultImage-1-10004-1.webp' },
@@ -89,6 +95,11 @@ export const FACE_FILTERS: FaceFilterOption[] = [
   { id: 'winter', label: 'Winter', description: 'Cool winter vibes', resourceType: '10020', category: 'vintage', previewUrl: '/pic/ResultImage-1-10020-1.webp' },
   { id: 'afternoon', label: 'Afternoon', description: 'Warm afternoon glow', resourceType: '10030', category: 'vintage', previewUrl: '/pic/ResultImage-1-10030-1.webp' },
   { id: 'coffee', label: 'Coffee', description: 'Rich coffee tones', resourceType: '10040', category: 'vintage', previewUrl: '/pic/ResultImage-1-10040-1.webp' },
+  { id: 'breakfast', label: 'Breakfast', description: 'Warm breakfast mood', resourceType: '10044', category: 'vintage', previewUrl: '/pic/ResultImage-1-10044-1.webp' },
+  { id: 'milk-coffee', label: 'Milk Coffee', description: 'Creamy coffee blend', resourceType: '10050', category: 'vintage', previewUrl: '/pic/ResultImage-1-10050-1.webp' },
+  { id: 'sunset', label: 'Sunset', description: 'Golden sunset glow', resourceType: '10053', category: 'vintage', previewUrl: '/pic/ResultImage-1-10053-1.webp' },
+  { id: 'japanese-style', label: 'Japanese Style', description: 'Traditional Japanese aesthetic', resourceType: '10055', category: 'vintage', previewUrl: '/pic/ResultImage-1-10055-1.webp' },
+  { id: 'falling-leaves', label: 'Falling Leaves', description: 'Autumn falling leaves', resourceType: '10058', category: 'vintage', previewUrl: '/pic/ResultImage-1-10058-1.webp' },
   
   // Vibrant Filters
   { id: 'early-summer', label: 'Early Summer', description: 'Fresh summer vibes', resourceType: '10003', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10003-1.webp' },
@@ -111,6 +122,15 @@ export const FACE_FILTERS: FaceFilterOption[] = [
   { id: 'lemon', label: 'Lemon', description: 'Fresh lemon yellow', resourceType: '10036', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10036-1.webp' },
   { id: 'cotton-candy', label: 'Cotton Candy', description: 'Sweet cotton candy pink', resourceType: '10037', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10037-1.webp' },
   { id: 'brook', label: 'Brook', description: 'Clear flowing water', resourceType: '10038', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10038-1.webp' },
+  { id: 'passion', label: 'Passion', description: 'Passionate vibrant red', resourceType: '10042', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10042-1.webp' },
+  { id: 'gradual-warmth', label: 'Gradual Warmth', description: 'Warm gradient tones', resourceType: '10043', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10043-1.webp' },
+  { id: 'forest', label: 'Forest', description: 'Fresh forest green', resourceType: '10048', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10048-1.webp' },
+  { id: 'surfing', label: 'Surfing', description: 'Ocean surfing vibes', resourceType: '10049', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10049-1.webp' },
+  { id: 'breeze', label: 'Breeze', description: 'Light breezy feeling', resourceType: '10052', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10052-1.webp' },
+  { id: 'starlight', label: 'Starlight', description: 'Sparkling starlight', resourceType: '10056', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10056-1.webp' },
+  { id: 'sunshine', label: 'Sunshine', description: 'Bright sunshine glow', resourceType: '10057', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10057-1.webp' },
+  { id: 'vitality-2', label: 'Vitality', description: 'Fresh vital energy', resourceType: '10059', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10059-1.webp' },
+  { id: 'sweetheart', label: 'Sweetheart', description: 'Sweet romantic pink', resourceType: '10060', category: 'vibrant', previewUrl: '/pic/ResultImage-1-10060-1.webp' },
   
   // Artistic Filters
   { id: 'confession', label: 'Confession', description: 'Dreamy artistic look', resourceType: '10005', category: 'artistic', previewUrl: '/pic/ResultImage-1-10005-1.webp' },
@@ -132,5 +152,5 @@ export const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB (RapidAPI limit)
 export const APP_CONFIG = {
   name: 'AI Portrait Studio',
   tagline: 'Transform Your Photos with AI Magic',
-  description: 'Professional AI-powered photo editing suite. Transform your appearance with age modification, gender swap, 40+ beauty filters, virtual try-on, and creative effects.',
+  description: 'Professional AI-powered photo editing suite. Transform your appearance with age modification, gender swap, 60+ beauty filters, virtual try-on, and creative effects.',
 };
