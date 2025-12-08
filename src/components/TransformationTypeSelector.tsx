@@ -23,6 +23,13 @@ const TRANSFORMATION_TYPES = [
     icon: '⚧️',
     gradient: 'from-blue-500 to-cyan-500',
   },
+  {
+    id: 'filter' as TransformationType,
+    label: 'Face Filters',
+    description: 'Apply artistic filters to your photo',
+    icon: '✨',
+    gradient: 'from-pink-500 to-rose-500',
+  },
 ];
 
 export default function TransformationTypeSelector({

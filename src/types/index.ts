@@ -4,8 +4,15 @@ export type AgeCategory = 'baby' | 'child' | 'young' | 'adult' | 'old' | 'elderl
 // Gender transformation options
 export type GenderOption = 'male' | 'female';
 
+// Face filter options
+export type FaceFilterType = 
+  | 'white-tea' | 'fair-skin' | 'early-summer' | 'tokyo' | 'confession'
+  | 'warm-sunshine' | 'rose' | 'clarity' | 'crystal-clear' | 'sweet-mint'
+  | 'basic' | 'heartbeat' | 'muted-gray' | 'cherry-pudding' | 'natural'
+  | 'elegance' | 'black-white' | 'fruit' | 'love' | 'winter';
+
 // Transformation type
-export type TransformationType = 'age' | 'gender';
+export type TransformationType = 'age' | 'gender' | 'filter';
 
 export interface AgeCategoryOption {
   id: AgeCategory;
@@ -24,12 +31,22 @@ export interface GenderOptionData {
   targetValue: number; // 0 for male, 1 for female
 }
 
+export interface FaceFilterOption {
+  id: FaceFilterType;
+  label: string;
+  description: string;
+  resourceType: string; // API resource_type code
+  category: 'natural' | 'vintage' | 'vibrant' | 'artistic';
+}
+
 // API request/response types
 export interface TransformRequest {
   image: string; // Base64 encoded image
   transformationType: TransformationType;
   ageCategory?: AgeCategory;
   gender?: GenderOption;
+  faceFilter?: FaceFilterType;
+  filterStrength?: number; // 0-1 for filter intensity
 }
 
 export interface TransformResponse {
@@ -45,11 +62,13 @@ export interface ImageState {
 }
 
 export interface AppState {
-  step: 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'processing' | 'result';
+  step: 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'processing' | 'result' | 'error';
   image: ImageState;
   transformationType: TransformationType | null;
   selectedAge: AgeCategory | null;
   selectedGender: GenderOption | null;
+  selectedFilter: FaceFilterType | null;
+  filterStrength: number;
   isLoading: boolean;
   error: string | null;
 }

@@ -8,6 +8,7 @@ import {
   ImageUpload,
   AgeSelector,
   GenderSelector,
+  FaceFilterSelector,
   TransformationTypeSelector,
   LoadingAnimation,
   ImageComparison,
@@ -15,11 +16,11 @@ import {
   ErrorDisplay,
   ProtectedRoute,
 } from '@/components';
-import { AgeCategory, GenderOption, TransformationType, TransformResponse } from '@/types';
-import { AGE_CATEGORIES, GENDER_OPTIONS } from '@/lib/constants';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse } from '@/types';
+import { AGE_CATEGORIES, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
 import { compressImage } from '@/lib/utils';
 
-type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'processing' | 'result' | 'error';
+type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'processing' | 'result' | 'error';
 
 export default function TransformPage() {
   const [step, setStep] = useState<Step>('upload');
@@ -29,6 +30,8 @@ export default function TransformPage() {
   const [transformationType, setTransformationType] = useState<TransformationType | null>(null);
   const [selectedAge, setSelectedAge] = useState<AgeCategory | null>(null);
   const [selectedGender, setSelectedGender] = useState<GenderOption | null>(null);
+  const [selectedFilter, setSelectedFilter] = useState<FaceFilterType | null>(null);
+  const [filterStrength, setFilterStrength] = useState<number>(0.7);
   const [error, setError] = useState<string | null>(null);
 
   const handleImageSelect = useCallback(async (imageSrc: string) => {
@@ -50,8 +53,10 @@ export default function TransformPage() {
     setTransformationType(type);
     if (type === 'age') {
       setStep('select-age');
-    } else {
+    } else if (type === 'gender') {
       setStep('select-gender');
+    } else if (type === 'filter') {
+      setStep('select-filter');
     }
   }, []);
 
@@ -103,12 +108,56 @@ export default function TransformPage() {
     await handleTransform('gender', gender);
   }, [handleTransform]);
 
+  const handleFilterSelect = useCallback(async (filter: FaceFilterType, strength: number) => {
+    setSelectedFilter(filter);
+    setFilterStrength(strength);
+    
+    if (!originalImage) {
+      setError('No image selected');
+      setStep('error');
+      return;
+    }
+
+    setStep('processing');
+    setError(null);
+
+    try {
+      const response = await fetch('/api/transform', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image: originalImage,
+          transformationType: 'filter',
+          faceFilter: filter,
+          filterStrength: strength,
+        }),
+      });
+
+      const data: TransformResponse = await response.json();
+
+      if (!data.success || !data.transformedImage) {
+        throw new Error(data.error || 'Transformation failed');
+      }
+
+      setTransformedImage(data.transformedImage);
+      setStep('result');
+    } catch (err) {
+      console.error('Transform error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to transform image');
+      setStep('error');
+    }
+  }, [originalImage]);
+
   const handleStartOver = useCallback(() => {
     setOriginalImage(null);
     setTransformedImage(null);
     setTransformationType(null);
     setSelectedAge(null);
     setSelectedGender(null);
+    setSelectedFilter(null);
+    setFilterStrength(0.7);
     setError(null);
     setStep('upload');
   }, []);
@@ -117,6 +166,8 @@ export default function TransformPage() {
     setTransformedImage(null);
     setSelectedAge(null);
     setSelectedGender(null);
+    setSelectedFilter(null);
+    setFilterStrength(0.7);
     setError(null);
     setStep('select-type');
   }, []);
@@ -126,16 +177,19 @@ export default function TransformPage() {
       setStep('upload');
       setOriginalImage(null);
       setTransformationType(null);
-    } else if (step === 'select-age' || step === 'select-gender') {
+    } else if (step === 'select-age' || step === 'select-gender' || step === 'select-filter') {
       setStep('select-type');
       setSelectedAge(null);
       setSelectedGender(null);
+      setSelectedFilter(null);
     } else if (step === 'error') {
       if (transformationType) {
         if (transformationType === 'age') {
           setStep('select-age');
-        } else {
+        } else if (transformationType === 'gender') {
           setStep('select-gender');
+        } else if (transformationType === 'filter') {
+          setStep('select-filter');
         }
       } else if (originalImage) {
         setStep('select-type');
@@ -150,10 +204,12 @@ export default function TransformPage() {
       handleAgeSelect(selectedAge);
     } else if (transformationType === 'gender' && selectedGender && originalImage) {
       handleGenderSelect(selectedGender);
+    } else if (transformationType === 'filter' && selectedFilter && originalImage) {
+      handleFilterSelect(selectedFilter, filterStrength);
     } else {
       handleGoBack();
     }
-  }, [transformationType, selectedAge, selectedGender, originalImage, handleAgeSelect, handleGenderSelect, handleGoBack]);
+  }, [transformationType, selectedAge, selectedGender, selectedFilter, filterStrength, originalImage, handleAgeSelect, handleGenderSelect, handleFilterSelect, handleGoBack]);
 
   const getStepTitle = () => {
     switch (step) {
@@ -165,6 +221,8 @@ export default function TransformPage() {
         return 'Select Age';
       case 'select-gender':
         return 'Select Gender';
+      case 'select-filter':
+        return 'Select Filter';
       case 'processing':
         return 'Processing';
       case 'result':
@@ -174,6 +232,9 @@ export default function TransformPage() {
         } else if (transformationType === 'gender' && selectedGender) {
           const genderOption = GENDER_OPTIONS.find((g) => g.id === selectedGender);
           return `Your ${genderOption?.label} Look`;
+        } else if (transformationType === 'filter' && selectedFilter) {
+          const filter = FACE_FILTERS.find((f) => f.id === selectedFilter);
+          return `${filter?.label} Filter Applied`;
         }
         return 'Your Transformation';
       case 'error':
@@ -188,6 +249,9 @@ export default function TransformPage() {
       return AGE_CATEGORIES.find((c) => c.id === selectedAge)?.label || 'Transformed';
     } else if (transformationType === 'gender' && selectedGender) {
       return GENDER_OPTIONS.find((g) => g.id === selectedGender)?.label || 'Transformed';
+    } else if (transformationType === 'filter' && selectedFilter) {
+      const filter = FACE_FILTERS.find((f) => f.id === selectedFilter);
+      return filter?.label || 'Filtered';
     }
     return 'Transformed';
   };
@@ -199,7 +263,7 @@ export default function TransformPage() {
       <div className="sticky top-16 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            {(step === 'select-type' || step === 'select-age' || step === 'select-gender' || step === 'error') && (
+            {(step === 'select-type' || step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'error') && (
               <button
                 onClick={handleGoBack}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -212,9 +276,10 @@ export default function TransformPage() {
               {step !== 'processing' && step !== 'error' && (
                 <p className="text-sm text-gray-500">
                   {step === 'upload' && 'Take a selfie or upload a photo'}
-                  {step === 'select-type' && 'Choose age or gender transformation'}
+                  {step === 'select-type' && 'Choose transformation type'}
                   {step === 'select-age' && 'Choose your desired age'}
                   {step === 'select-gender' && 'Choose your desired gender'}
+                  {step === 'select-filter' && 'Select and adjust filter'}
                   {step === 'result' && 'Your transformation is ready!'}
                 </p>
               )}
@@ -227,7 +292,7 @@ export default function TransformPage() {
               <div
                 key={s}
                 className={`h-1 flex-1 rounded-full transition-colors ${
-                  ['upload', 'select-type', 'select-age', 'select-gender', 'processing', 'result'].indexOf(step) >= index
+                  ['upload', 'select-type', 'select-age', 'select-gender', 'select-filter', 'processing', 'result'].indexOf(step) >= index
                     ? 'bg-gradient-to-r from-purple-500 to-pink-500'
                     : 'bg-gray-200'
                 }`}
@@ -295,8 +360,20 @@ export default function TransformPage() {
             </motion.div>
           )}
 
+          {/* Face Filter Selection Step */}
+          {step === 'select-filter' && originalImage && (
+            <motion.div
+              key="select-filter"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+            >
+              <FaceFilterSelector onFilterSelect={handleFilterSelect} />
+            </motion.div>
+          )}
+
           {/* Processing Step */}
-          {step === 'processing' && (selectedAge || selectedGender) && (
+          {step === 'processing' && (selectedAge || selectedGender || selectedFilter) && (
             <motion.div
               key="processing"
               initial={{ opacity: 0, scale: 0.95 }}

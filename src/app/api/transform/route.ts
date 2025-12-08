@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AGE_CATEGORIES, AILAB_API_URL, GENDER_OPTIONS } from '@/lib/constants';
-import { AgeCategory, GenderOption, TransformationType, TransformResponse } from '@/types';
+import { AGE_CATEGORIES, AILAB_API_URL, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse } from '@/types';
 
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest): Promise<NextResponse<TransformResponse>> {
   try {
     const body = await request.json();
-    const { image, transformationType, ageCategory, gender } = body as { 
+    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength } = body as { 
       image: string; 
       transformationType: TransformationType;
       ageCategory?: AgeCategory;
       gender?: GenderOption;
+      faceFilter?: FaceFilterType;
+      filterStrength?: number;
     };
 
     // Validate inputs
@@ -38,8 +40,11 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       );
     }
 
-    let actionType: string;
+    let actionType: string | undefined;
     let target: string | undefined;
+    let apiUrl = AILAB_API_URL;
+    let resourceType: string | undefined;
+    let strength: number | undefined;
 
     // Handle age transformation
     if (transformationType === 'age') {
@@ -82,6 +87,29 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       actionType = 'V2_GENDER';
       target = genderOption.targetValue.toString();
       console.log(`Transforming to gender: ${genderOption.label}`);
+    }
+    // Handle face filter
+    else if (transformationType === 'filter') {
+      if (!faceFilter) {
+        return NextResponse.json(
+          { success: false, error: 'No filter selected' },
+          { status: 400 }
+        );
+      }
+
+      const filter = FACE_FILTERS.find((f) => f.id === faceFilter);
+      if (!filter) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid filter' },
+          { status: 400 }
+        );
+      }
+
+      // Face filter uses different endpoint
+      apiUrl = 'https://www.ailabapi.com/api/portrait/effects/face-filter';
+      resourceType = filter.resourceType;
+      strength = filterStrength ?? 0.7;
+      console.log(`Applying filter: ${filter.label} with strength ${strength}`);
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -101,13 +129,20 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
     const formData = new FormData();
     const blob = new Blob([imageBuffer], { type: mimeType });
     formData.append('image', blob, `photo.${extension}`);
-    formData.append('action_type', actionType);
-    if (target) {
-      formData.append('target', target);
+    
+    // Add parameters based on transformation type
+    if (transformationType === 'filter') {
+      formData.append('resource_type', resourceType!);
+      formData.append('strength', strength!.toString());
+    } else {
+      formData.append('action_type', actionType!);
+      if (target) {
+        formData.append('target', target);
+      }
     }
 
-    // Call AILabAPI directly (new API doesn't use RapidAPI)
-    const response = await fetch(AILAB_API_URL, {
+    // Call AILabAPI directly
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'ailabapi-api-key': ailabApiKey,
@@ -136,10 +171,26 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       );
     }
 
-    // Extract the result image (now returns base64 directly)
+    // Extract the result image
     let transformedImage: string | undefined;
 
-    if (data.result?.image) {
+    // Face filter returns image_url, face attribute editing returns result.image
+    if (transformationType === 'filter' && data.data?.image_url) {
+      const imageUrl = data.data.image_url;
+      // Fetch the image from URL and convert to base64
+      try {
+        const imageResponse = await fetch(imageUrl);
+        const imageArrayBuffer = await imageResponse.arrayBuffer();
+        const base64 = Buffer.from(imageArrayBuffer).toString('base64');
+        transformedImage = `data:image/jpeg;base64,${base64}`;
+      } catch (fetchError) {
+        console.error('Error fetching result image:', fetchError);
+        return NextResponse.json(
+          { success: false, error: 'Failed to fetch transformed image' },
+          { status: 500 }
+        );
+      }
+    } else if (data.result?.image) {
       const resultImage = data.result.image;
       // The API returns base64 without prefix, add it
       transformedImage = resultImage.startsWith('data:') 

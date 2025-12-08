@@ -7,6 +7,7 @@ export { default as CameraCapture } from './CameraCapture';
 export { default as ImageUpload } from './ImageUpload';
 export { default as AgeSelector } from './AgeSelector';
 export { default as GenderSelector } from './GenderSelector';
+export { default as FaceFilterSelector } from './FaceFilterSelector';
 export { default as TransformationTypeSelector } from './TransformationTypeSelector';
 export { default as LoadingAnimation } from './LoadingAnimation';
 export { default as ImageComparison } from './ImageComparison';

@@ -61,7 +61,7 @@ export default function HomePage() {
       icon: '✨',
       title: 'Beauty Filters',
       description: 'Enhance your natural beauty',
-      status: 'Coming Soon',
+      status: 'Available',
       gradient: 'from-pink-500 to-rose-500',
     },
     {
