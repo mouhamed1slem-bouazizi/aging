@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AGE_CATEGORIES, AILAB_API_URL, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams } from '@/types';
 
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest): Promise<NextResponse<TransformResponse>> {
   try {
     const body = await request.json();
-    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor } = body as { 
+    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty } = body as { 
       image: string; 
       transformationType: TransformationType;
       ageCategory?: AgeCategory;
@@ -15,6 +15,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       faceFilter?: FaceFilterType;
       filterStrength?: number;
       lipColor?: LipColorRGBA;
+      faceBeauty?: FaceBeautyParams;
     };
 
     // Validate inputs
@@ -124,6 +125,19 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       // Lip color uses different endpoint
       apiUrl = 'https://www.ailabapi.com/api/portrait/effects/lips-color-changer';
       console.log(`Applying lip color: RGB(${lipColor.r}, ${lipColor.g}, ${lipColor.b}) with alpha ${lipColor.a}`);
+    }
+    // Handle face beauty transformation
+    else if (transformationType === 'face-beauty') {
+      if (!faceBeauty) {
+        return NextResponse.json(
+          { success: false, error: 'No beauty parameters provided' },
+          { status: 400 }
+        );
+      }
+
+      // Face beauty uses different endpoint
+      apiUrl = 'https://www.ailabapi.com/api/portrait/effects/face-beauty';
+      console.log(`Applying face beauty: sharp=${faceBeauty.sharp}, smooth=${faceBeauty.smooth}, white=${faceBeauty.white}`);
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -159,6 +173,11 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
         }
       }]);
       formData.append('lip_color_infos', lipColorInfos);
+    } else if (transformationType === 'face-beauty') {
+      // Face beauty API requires sharp, smooth, and white parameters
+      formData.append('sharp', faceBeauty!.sharp.toString());
+      formData.append('smooth', faceBeauty!.smooth.toString());
+      formData.append('white', faceBeauty!.white.toString());
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -199,7 +218,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
     // Extract the result image
     let transformedImage: string | undefined;
 
-    // Face filter returns image_url, lip color returns result_image, face attribute editing returns result.image
+    // Face filter returns image_url, lip color returns result_image, face beauty returns image_url, face attribute editing returns result.image
     if (transformationType === 'filter' && data.data?.image_url) {
       const imageUrl = data.data.image_url;
       // Fetch the image from URL and convert to base64
@@ -221,6 +240,21 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       transformedImage = resultImage.startsWith('data:') 
         ? resultImage 
         : `data:image/jpeg;base64,${resultImage}`;
+    } else if (transformationType === 'face-beauty' && data.data?.image_url) {
+      const imageUrl = data.data.image_url;
+      // Fetch the image from URL and convert to base64
+      try {
+        const imageResponse = await fetch(imageUrl);
+        const imageArrayBuffer = await imageResponse.arrayBuffer();
+        const base64 = Buffer.from(imageArrayBuffer).toString('base64');
+        transformedImage = `data:image/jpeg;base64,${base64}`;
+      } catch (fetchError) {
+        console.error('Error fetching result image:', fetchError);
+        return NextResponse.json(
+          { success: false, error: 'Failed to fetch transformed image' },
+          { status: 500 }
+        );
+      }
     } else if (data.result?.image) {
       const resultImage = data.result.image;
       // The API returns base64 without prefix, add it
