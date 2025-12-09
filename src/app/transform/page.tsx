@@ -24,7 +24,7 @@ import { compressImage } from '@/lib/utils';
 type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'processing' | 'result' | 'error';
 
 export default function TransformPage() {
-  const [step, setStep] = useState<Step>('upload');
+  const [step, setStep] = useState<Step>('select-type');
   const [showCamera, setShowCamera] = useState(false);
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [transformedImage, setTransformedImage] = useState<string | null>(null);
@@ -41,27 +41,40 @@ export default function TransformPage() {
       // Compress image for faster processing (max 4MB for AILabAPI)
       const compressed = await compressImage(imageSrc, 1024, 0.85);
       setOriginalImage(compressed);
-      setStep('select-type');
       setShowCamera(false);
+      
+      // After image upload, proceed to the specific transformation step
+      if (transformationType === 'age') {
+        setStep('select-age');
+      } else if (transformationType === 'gender') {
+        setStep('select-gender');
+      } else if (transformationType === 'filter') {
+        setStep('select-filter');
+      } else if (transformationType === 'lip-color') {
+        setStep('select-lip-color');
+      }
     } catch (err) {
       console.error('Image compression error:', err);
       setOriginalImage(imageSrc);
-      setStep('select-type');
       setShowCamera(false);
+      
+      // After image upload, proceed to the specific transformation step
+      if (transformationType === 'age') {
+        setStep('select-age');
+      } else if (transformationType === 'gender') {
+        setStep('select-gender');
+      } else if (transformationType === 'filter') {
+        setStep('select-filter');
+      } else if (transformationType === 'lip-color') {
+        setStep('select-lip-color');
+      }
     }
-  }, []);
+  }, [transformationType]);
 
   const handleTypeSelect = useCallback((type: TransformationType) => {
     setTransformationType(type);
-    if (type === 'age') {
-      setStep('select-age');
-    } else if (type === 'gender') {
-      setStep('select-gender');
-    } else if (type === 'filter') {
-      setStep('select-filter');
-    } else if (type === 'lip-color') {
-      setStep('select-lip-color');
-    }
+    // After selecting type, go to upload step
+    setStep('upload');
   }, []);
 
   const handleTransform = useCallback(async (type: TransformationType, value: AgeCategory | GenderOption) => {
@@ -204,7 +217,7 @@ export default function TransformPage() {
     setFilterStrength(0.7);
     setSelectedLipColor(null);
     setError(null);
-    setStep('upload');
+    setStep('select-type');
   }, []);
 
   const handleTryAnother = useCallback(() => {
@@ -219,12 +232,11 @@ export default function TransformPage() {
   }, []);
 
   const handleGoBack = useCallback(() => {
-    if (step === 'select-type') {
-      setStep('upload');
-      setOriginalImage(null);
-      setTransformationType(null);
-    } else if (step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color') {
+    if (step === 'upload') {
       setStep('select-type');
+      setOriginalImage(null);
+    } else if (step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color') {
+      setStep('upload');
       setSelectedAge(null);
       setSelectedGender(null);
       setSelectedFilter(null);
@@ -241,9 +253,9 @@ export default function TransformPage() {
           setStep('select-lip-color');
         }
       } else if (originalImage) {
-        setStep('select-type');
-      } else {
         setStep('upload');
+      } else {
+        setStep('select-type');
       }
     }
   }, [step, originalImage, transformationType]);
@@ -320,7 +332,7 @@ export default function TransformPage() {
       <div className="sticky top-16 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            {(step === 'select-type' || step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color' || step === 'error') && (
+            {(step === 'upload' || step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color' || step === 'error') && (
               <button
                 onClick={handleGoBack}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -332,8 +344,8 @@ export default function TransformPage() {
               <h1 className="text-xl font-bold text-gray-900">{getStepTitle()}</h1>
               {step !== 'processing' && step !== 'error' && (
                 <p className="text-sm text-gray-500">
+                  {step === 'select-type' && 'Choose your transformation type first'}
                   {step === 'upload' && 'Take a selfie or upload a photo'}
-                  {step === 'select-type' && 'Choose transformation type'}
                   {step === 'select-age' && 'Choose your desired age'}
                   {step === 'select-gender' && 'Choose your desired gender'}
                   {step === 'select-filter' && 'Select and adjust filter'}
@@ -346,11 +358,11 @@ export default function TransformPage() {
 
           {/* Progress indicator */}
           <div className="flex gap-2 mt-4">
-            {['upload', 'select-type', 'select-age', 'result'].map((s, index) => (
+            {['select-type', 'upload', 'select-age', 'result'].map((s, index) => (
               <div
                 key={s}
                 className={`h-1 flex-1 rounded-full transition-colors ${
-                  ['upload', 'select-type', 'select-age', 'select-gender', 'select-filter', 'processing', 'result'].indexOf(step) >= index
+                  ['select-type', 'upload', 'select-age', 'select-gender', 'select-filter', 'select-lip-color', 'processing', 'result'].indexOf(step) >= index
                     ? 'bg-gradient-to-r from-purple-500 to-pink-500'
                     : 'bg-gray-200'
                 }`}
@@ -363,7 +375,19 @@ export default function TransformPage() {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <AnimatePresence mode="wait">
-          {/* Upload Step */}
+          {/* Type Selection Step - Now First */}
+          {step === 'select-type' && (
+            <motion.div
+              key="select-type"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+            >
+              <TransformationTypeSelector onTypeSelect={handleTypeSelect} />
+            </motion.div>
+          )}
+
+          {/* Upload Step - Now Second */}
           {step === 'upload' && (
             <motion.div
               key="upload"
@@ -375,18 +399,6 @@ export default function TransformPage() {
                 onImageSelect={handleImageSelect}
                 onOpenCamera={() => setShowCamera(true)}
               />
-            </motion.div>
-          )}
-
-          {/* Type Selection Step */}
-          {step === 'select-type' && originalImage && (
-            <motion.div
-              key="select-type"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-            >
-              <TransformationTypeSelector onTypeSelect={handleTypeSelect} />
             </motion.div>
           )}
 
