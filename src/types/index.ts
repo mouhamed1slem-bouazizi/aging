@@ -24,7 +24,7 @@ export type FaceFilterType =
   | 'nostalgia' | 'cheese' | 'butterfly';
 
 // Transformation type
-export type TransformationType = 'age' | 'gender' | 'filter';
+export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color';
 
 export interface AgeCategoryOption {
   id: AgeCategory;
@@ -41,6 +41,22 @@ export interface GenderOptionData {
   description: string;
   icon: string;
   targetValue: number; // 0 for male, 1 for female
+}
+
+// Lip color options
+export interface LipColorRGBA {
+  r: number; // 0-255
+  g: number; // 0-255
+  b: number; // 0-255
+  a: number; // 0-100 (transparency)
+}
+
+export interface LipColorOption {
+  id: string;
+  label: string;
+  description: string;
+  rgba: LipColorRGBA;
+  category: 'natural' | 'bold' | 'nude' | 'vibrant';
 }
 
 export interface FaceFilterOption {
@@ -60,6 +76,7 @@ export interface TransformRequest {
   gender?: GenderOption;
   faceFilter?: FaceFilterType;
   filterStrength?: number; // 0-1 for filter intensity
+  lipColor?: LipColorRGBA; // Lip color for lip-color transformation
 }
 
 export interface TransformResponse {
@@ -75,13 +92,14 @@ export interface ImageState {
 }
 
 export interface AppState {
-  step: 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'processing' | 'result' | 'error';
+  step: 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'processing' | 'result' | 'error';
   image: ImageState;
   transformationType: TransformationType | null;
   selectedAge: AgeCategory | null;
   selectedGender: GenderOption | null;
   selectedFilter: FaceFilterType | null;
   filterStrength: number;
+  selectedLipColor: LipColorRGBA | null;
   isLoading: boolean;
   error: string | null;
 }

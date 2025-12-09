@@ -89,7 +89,7 @@ export default function HomePage() {
       icon: '👄',
       title: 'Lip Color',
       description: 'Try different lipstick colors',
-      status: 'Coming Soon',
+      status: 'Available',
       gradient: 'from-rose-500 to-red-500',
     },
     {

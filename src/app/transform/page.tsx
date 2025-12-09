@@ -9,6 +9,7 @@ import {
   AgeSelector,
   GenderSelector,
   FaceFilterSelector,
+  LipColorSelector,
   TransformationTypeSelector,
   LoadingAnimation,
   ImageComparison,
@@ -16,11 +17,11 @@ import {
   ErrorDisplay,
   ProtectedRoute,
 } from '@/components';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA } from '@/types';
 import { AGE_CATEGORIES, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
 import { compressImage } from '@/lib/utils';
 
-type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'processing' | 'result' | 'error';
+type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'processing' | 'result' | 'error';
 
 export default function TransformPage() {
   const [step, setStep] = useState<Step>('upload');
@@ -32,6 +33,7 @@ export default function TransformPage() {
   const [selectedGender, setSelectedGender] = useState<GenderOption | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<FaceFilterType | null>(null);
   const [filterStrength, setFilterStrength] = useState<number>(0.7);
+  const [selectedLipColor, setSelectedLipColor] = useState<LipColorRGBA | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleImageSelect = useCallback(async (imageSrc: string) => {
@@ -57,6 +59,8 @@ export default function TransformPage() {
       setStep('select-gender');
     } else if (type === 'filter') {
       setStep('select-filter');
+    } else if (type === 'lip-color') {
+      setStep('select-lip-color');
     }
   }, []);
 
@@ -150,6 +154,46 @@ export default function TransformPage() {
     }
   }, [originalImage]);
 
+  const handleLipColorSelect = useCallback(async (lipColor: LipColorRGBA) => {
+    setSelectedLipColor(lipColor);
+    
+    if (!originalImage) {
+      setError('No image selected');
+      setStep('error');
+      return;
+    }
+
+    setStep('processing');
+    setError(null);
+
+    try {
+      const response = await fetch('/api/transform', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image: originalImage,
+          transformationType: 'lip-color',
+          lipColor: lipColor,
+        }),
+      });
+
+      const data: TransformResponse = await response.json();
+
+      if (!data.success || !data.transformedImage) {
+        throw new Error(data.error || 'Transformation failed');
+      }
+
+      setTransformedImage(data.transformedImage);
+      setStep('result');
+    } catch (err) {
+      console.error('Transform error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to transform image');
+      setStep('error');
+    }
+  }, [originalImage]);
+
   const handleStartOver = useCallback(() => {
     setOriginalImage(null);
     setTransformedImage(null);
@@ -158,6 +202,7 @@ export default function TransformPage() {
     setSelectedGender(null);
     setSelectedFilter(null);
     setFilterStrength(0.7);
+    setSelectedLipColor(null);
     setError(null);
     setStep('upload');
   }, []);
@@ -168,6 +213,7 @@ export default function TransformPage() {
     setSelectedGender(null);
     setSelectedFilter(null);
     setFilterStrength(0.7);
+    setSelectedLipColor(null);
     setError(null);
     setStep('select-type');
   }, []);
@@ -177,11 +223,12 @@ export default function TransformPage() {
       setStep('upload');
       setOriginalImage(null);
       setTransformationType(null);
-    } else if (step === 'select-age' || step === 'select-gender' || step === 'select-filter') {
+    } else if (step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color') {
       setStep('select-type');
       setSelectedAge(null);
       setSelectedGender(null);
       setSelectedFilter(null);
+      setSelectedLipColor(null);
     } else if (step === 'error') {
       if (transformationType) {
         if (transformationType === 'age') {
@@ -190,6 +237,8 @@ export default function TransformPage() {
           setStep('select-gender');
         } else if (transformationType === 'filter') {
           setStep('select-filter');
+        } else if (transformationType === 'lip-color') {
+          setStep('select-lip-color');
         }
       } else if (originalImage) {
         setStep('select-type');
@@ -206,10 +255,12 @@ export default function TransformPage() {
       handleGenderSelect(selectedGender);
     } else if (transformationType === 'filter' && selectedFilter && originalImage) {
       handleFilterSelect(selectedFilter, filterStrength);
+    } else if (transformationType === 'lip-color' && selectedLipColor && originalImage) {
+      handleLipColorSelect(selectedLipColor);
     } else {
       handleGoBack();
     }
-  }, [transformationType, selectedAge, selectedGender, selectedFilter, filterStrength, originalImage, handleAgeSelect, handleGenderSelect, handleFilterSelect, handleGoBack]);
+  }, [transformationType, selectedAge, selectedGender, selectedFilter, filterStrength, selectedLipColor, originalImage, handleAgeSelect, handleGenderSelect, handleFilterSelect, handleLipColorSelect, handleGoBack]);
 
   const getStepTitle = () => {
     switch (step) {
@@ -223,6 +274,8 @@ export default function TransformPage() {
         return 'Select Gender';
       case 'select-filter':
         return 'Select Filter';
+      case 'select-lip-color':
+        return 'Select Lip Color';
       case 'processing':
         return 'Processing';
       case 'result':
@@ -235,6 +288,8 @@ export default function TransformPage() {
         } else if (transformationType === 'filter' && selectedFilter) {
           const filter = FACE_FILTERS.find((f) => f.id === selectedFilter);
           return `${filter?.label} Filter Applied`;
+        } else if (transformationType === 'lip-color') {
+          return 'Your New Lip Color';
         }
         return 'Your Transformation';
       case 'error':
@@ -252,6 +307,8 @@ export default function TransformPage() {
     } else if (transformationType === 'filter' && selectedFilter) {
       const filter = FACE_FILTERS.find((f) => f.id === selectedFilter);
       return filter?.label || 'Filtered';
+    } else if (transformationType === 'lip-color') {
+      return 'Lip Color';
     }
     return 'Transformed';
   };
@@ -263,7 +320,7 @@ export default function TransformPage() {
       <div className="sticky top-16 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            {(step === 'select-type' || step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'error') && (
+            {(step === 'select-type' || step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color' || step === 'error') && (
               <button
                 onClick={handleGoBack}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -280,6 +337,7 @@ export default function TransformPage() {
                   {step === 'select-age' && 'Choose your desired age'}
                   {step === 'select-gender' && 'Choose your desired gender'}
                   {step === 'select-filter' && 'Select and adjust filter'}
+                  {step === 'select-lip-color' && 'Choose your perfect lip color'}
                   {step === 'result' && 'Your transformation is ready!'}
                 </p>
               )}
@@ -372,8 +430,20 @@ export default function TransformPage() {
             </motion.div>
           )}
 
+          {/* Lip Color Selection Step */}
+          {step === 'select-lip-color' && originalImage && (
+            <motion.div
+              key="select-lip-color"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+            >
+              <LipColorSelector onColorSelect={handleLipColorSelect} />
+            </motion.div>
+          )}
+
           {/* Processing Step */}
-          {step === 'processing' && (selectedAge || selectedGender || selectedFilter) && (
+          {step === 'processing' && (selectedAge || selectedGender || selectedFilter || selectedLipColor) && (
             <motion.div
               key="processing"
               initial={{ opacity: 0, scale: 0.95 }}

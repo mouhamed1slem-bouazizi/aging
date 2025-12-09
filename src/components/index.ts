@@ -8,6 +8,7 @@ export { default as ImageUpload } from './ImageUpload';
 export { default as AgeSelector } from './AgeSelector';
 export { default as GenderSelector } from './GenderSelector';
 export { default as FaceFilterSelector } from './FaceFilterSelector';
+export { default as LipColorSelector } from './LipColorSelector';
 export { default as TransformationTypeSelector } from './TransformationTypeSelector';
 export { default as LoadingAnimation } from './LoadingAnimation';
 export { default as ImageComparison } from './ImageComparison';

@@ -1,4 +1,4 @@
-import { AgeCategoryOption, GenderOptionData, FaceFilterOption } from '@/types';
+import { AgeCategoryOption, GenderOptionData, FaceFilterOption, LipColorOption } from '@/types';
 
 // AILabAPI endpoint for face attribute editing (direct, not through RapidAPI)
 export const AILAB_API_URL = 'https://www.ailabapi.com/api/portrait/effects/face-attribute-editing';
@@ -69,6 +69,36 @@ export const GENDER_OPTIONS: GenderOptionData[] = [
     icon: '👩',
     targetValue: 1,
   },
+];
+
+export const LIP_COLORS: LipColorOption[] = [
+  // Natural Category
+  { id: 'nude-pink', label: 'Nude Pink', description: 'Soft natural nude', rgba: { r: 207, g: 150, b: 150, a: 80 }, category: 'natural' },
+  { id: 'rose-beige', label: 'Rose Beige', description: 'Elegant rose beige', rgba: { r: 198, g: 132, b: 130, a: 75 }, category: 'natural' },
+  { id: 'soft-pink', label: 'Soft Pink', description: 'Delicate soft pink', rgba: { r: 255, g: 182, b: 193, a: 70 }, category: 'natural' },
+  { id: 'peachy', label: 'Peachy', description: 'Warm peachy tone', rgba: { r: 255, g: 203, b: 164, a: 75 }, category: 'natural' },
+  
+  // Nude Category
+  { id: 'bare-nude', label: 'Bare Nude', description: 'Barely there nude', rgba: { r: 190, g: 140, b: 135, a: 60 }, category: 'nude' },
+  { id: 'mauve', label: 'Mauve', description: 'Dusty mauve', rgba: { r: 176, g: 124, b: 144, a: 70 }, category: 'nude' },
+  { id: 'taupe', label: 'Taupe', description: 'Neutral taupe', rgba: { r: 162, g: 123, b: 128, a: 75 }, category: 'nude' },
+  { id: 'mocha', label: 'Mocha', description: 'Rich mocha brown', rgba: { r: 156, g: 102, b: 98, a: 80 }, category: 'nude' },
+  
+  // Bold Category
+  { id: 'classic-red', label: 'Classic Red', description: 'Timeless red', rgba: { r: 220, g: 20, b: 60, a: 100 }, category: 'bold' },
+  { id: 'deep-red', label: 'Deep Red', description: 'Rich deep red', rgba: { r: 153, g: 0, b: 0, a: 100 }, category: 'bold' },
+  { id: 'wine', label: 'Wine', description: 'Sophisticated wine', rgba: { r: 114, g: 47, b: 55, a: 95 }, category: 'bold' },
+  { id: 'burgundy', label: 'Burgundy', description: 'Dark burgundy', rgba: { r: 128, g: 0, b: 32, a: 100 }, category: 'bold' },
+  { id: 'plum', label: 'Plum', description: 'Deep plum purple', rgba: { r: 142, g: 69, b: 133, a: 90 }, category: 'bold' },
+  
+  // Vibrant Category
+  { id: 'hot-pink', label: 'Hot Pink', description: 'Bold hot pink', rgba: { r: 246, g: 27, b: 91, a: 100 }, category: 'vibrant' },
+  { id: 'fuchsia', label: 'Fuchsia', description: 'Bright fuchsia', rgba: { r: 255, g: 0, b: 255, a: 95 }, category: 'vibrant' },
+  { id: 'coral', label: 'Coral', description: 'Vibrant coral', rgba: { r: 255, g: 127, b: 80, a: 90 }, category: 'vibrant' },
+  { id: 'orange-red', label: 'Orange Red', description: 'Fiery orange-red', rgba: { r: 255, g: 69, b: 0, a: 95 }, category: 'vibrant' },
+  { id: 'berry', label: 'Berry', description: 'Juicy berry', rgba: { r: 199, g: 21, b: 133, a: 90 }, category: 'vibrant' },
+  { id: 'magenta', label: 'Magenta', description: 'Electric magenta', rgba: { r: 202, g: 31, b: 123, a: 100 }, category: 'vibrant' },
+  { id: 'cherry', label: 'Cherry', description: 'Bright cherry red', rgba: { r: 222, g: 49, b: 99, a: 95 }, category: 'vibrant' },
 ];
 
 export const FACE_FILTERS: FaceFilterOption[] = [

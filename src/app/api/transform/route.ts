@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AGE_CATEGORIES, AILAB_API_URL, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA } from '@/types';
 
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest): Promise<NextResponse<TransformResponse>> {
   try {
     const body = await request.json();
-    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength } = body as { 
+    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor } = body as { 
       image: string; 
       transformationType: TransformationType;
       ageCategory?: AgeCategory;
       gender?: GenderOption;
       faceFilter?: FaceFilterType;
       filterStrength?: number;
+      lipColor?: LipColorRGBA;
     };
 
     // Validate inputs
@@ -110,6 +111,19 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       resourceType = filter.resourceType;
       strength = filterStrength ?? 0.7;
       console.log(`Applying filter: ${filter.label} with strength ${strength}`);
+    }
+    // Handle lip color transformation
+    else if (transformationType === 'lip-color') {
+      if (!lipColor) {
+        return NextResponse.json(
+          { success: false, error: 'No lip color selected' },
+          { status: 400 }
+        );
+      }
+
+      // Lip color uses different endpoint
+      apiUrl = 'https://www.ailabapi.com/api/portrait/effects/lips-color-changer';
+      console.log(`Applying lip color: RGB(${lipColor.r}, ${lipColor.g}, ${lipColor.b}) with alpha ${lipColor.a}`);
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -134,6 +148,17 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
     if (transformationType === 'filter') {
       formData.append('resource_type', resourceType!);
       formData.append('strength', strength!.toString());
+    } else if (transformationType === 'lip-color') {
+      // Lip color API requires lip_color_infos as JSON string
+      const lipColorInfos = JSON.stringify([{
+        rgba: {
+          r: lipColor!.r,
+          g: lipColor!.g,
+          b: lipColor!.b,
+          a: lipColor!.a,
+        }
+      }]);
+      formData.append('lip_color_infos', lipColorInfos);
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -174,7 +199,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
     // Extract the result image
     let transformedImage: string | undefined;
 
-    // Face filter returns image_url, face attribute editing returns result.image
+    // Face filter returns image_url, lip color returns result_image, face attribute editing returns result.image
     if (transformationType === 'filter' && data.data?.image_url) {
       const imageUrl = data.data.image_url;
       // Fetch the image from URL and convert to base64
@@ -190,6 +215,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
           { status: 500 }
         );
       }
+    } else if (transformationType === 'lip-color' && data.result_image) {
+      const resultImage = data.result_image;
+      // The API returns base64 without prefix, add it
+      transformedImage = resultImage.startsWith('data:') 
+        ? resultImage 
+        : `data:image/jpeg;base64,${resultImage}`;
     } else if (data.result?.image) {
       const resultImage = data.result.image;
       // The API returns base64 without prefix, add it
