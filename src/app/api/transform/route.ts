@@ -275,13 +275,13 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       formData.append('task_type', 'sync');
     } else if (transformationType === 'hairstyle') {
       // Hairstyle API requires auto, hair_style, color (optional), image_size, and task_type
-      formData.append('auto', '1');
+      formData.append('task_type', 'async'); // Must be first
+      formData.append('auto', '1'); // Required integer
       formData.append('hair_style', hairstyle!.hairStyle);
       if (hairstyle!.color) {
         formData.append('color', hairstyle!.color);
       }
       formData.append('image_size', '1'); // Return 1 result image
-      formData.append('task_type', 'async'); // Async task
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -301,6 +301,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
     if (!response.ok) {
       const errorText = await response.text();
       console.error('AILabAPI error:', response.status, errorText);
+      
+      // For hairstyle, provide more detailed error
+      if (transformationType === 'hairstyle') {
+        console.error('Hairstyle params:', { hairStyle: hairstyle?.hairStyle, color: hairstyle?.color });
+      }
+      
       return NextResponse.json(
         { success: false, error: `API error: ${response.status}` },
         { status: response.status }
@@ -309,6 +315,11 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
 
     const data = await response.json();
     console.log('AILabAPI response received');
+    
+    // Log hairstyle response for debugging
+    if (transformationType === 'hairstyle') {
+      console.log('Hairstyle API full response:', JSON.stringify(data, null, 2));
+    }
 
     // Check for API error in response
     if (data.error_code !== 0) {
@@ -323,7 +334,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
     if (transformationType === 'hairstyle') {
       const taskId = data.data?.task_id;
       if (!taskId) {
-        console.error('No task_id in hairstyle response:', data);
+        console.error('No task_id in hairstyle response:', JSON.stringify(data, null, 2));
         return NextResponse.json(
           { success: false, error: 'Failed to start hairstyle transformation' },
           { status: 500 }
