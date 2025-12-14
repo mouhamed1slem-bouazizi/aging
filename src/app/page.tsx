@@ -135,6 +135,13 @@ export default function HomePage() {
       gradient: 'from-purple-500 to-pink-500',
     },
     {
+      icon: '😊',
+      title: 'Facial Expression',
+      description: 'Change your facial emotions',
+      status: 'Available',
+      gradient: 'from-yellow-500 to-orange-500',
+    },
+    {
       icon: '🎨',
       title: 'Artistic Filters',
       description: 'Transform into art styles',
