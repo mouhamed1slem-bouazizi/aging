@@ -72,7 +72,7 @@ export default function TransformationTypeSelector({
   disabled = false,
 }: TransformationTypeSelectorProps) {
   return (
-    <div className="w-full max-w-3xl mx-auto">
+    <div className="w-full max-w-6xl mx-auto px-4">
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Choose Transformation Type
@@ -82,7 +82,7 @@ export default function TransformationTypeSelector({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-8 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
         {TRANSFORMATION_TYPES.map((type, index) => (
           <motion.button
             key={type.id}
@@ -93,23 +93,23 @@ export default function TransformationTypeSelector({
             whileTap={{ scale: 0.95 }}
             onClick={() => onTypeSelect(type.id)}
             disabled={disabled}
-            className="relative group p-8 rounded-3xl bg-white border-2 border-gray-200 hover:border-transparent transition-all duration-300 shadow-lg hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+            className="relative group p-6 rounded-2xl bg-white border-2 border-gray-200 hover:border-transparent transition-all duration-300 shadow-lg hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
           >
             {/* Gradient background on hover */}
             <div className={`absolute inset-0 bg-gradient-to-br ${type.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
 
             {/* Icon */}
-            <div className="text-7xl mb-4 transform group-hover:scale-110 transition-transform duration-300">
+            <div className="text-5xl md:text-6xl mb-3 transform group-hover:scale-110 transition-transform duration-300">
               {type.icon}
             </div>
 
             {/* Label */}
-            <h3 className="text-2xl font-bold mb-3 text-gray-800 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:bg-clip-text group-hover:from-gray-800 group-hover:to-gray-600 transition-all duration-300">
+            <h3 className="text-lg md:text-xl font-bold mb-2 text-gray-800 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:bg-clip-text group-hover:from-gray-800 group-hover:to-gray-600 transition-all duration-300">
               {type.label}
             </h3>
 
             {/* Description */}
-            <p className="text-gray-600 group-hover:text-gray-700 transition-colors duration-300">
+            <p className="text-sm text-gray-600 group-hover:text-gray-700 transition-colors duration-300">
               {type.description}
             </p>
 
