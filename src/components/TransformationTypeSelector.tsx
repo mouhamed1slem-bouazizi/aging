@@ -51,6 +51,13 @@ const TRANSFORMATION_TYPES = [
     icon: '🌟',
     gradient: 'from-blue-500 to-purple-500',
   },
+  {
+    id: 'skin-beauty' as TransformationType,
+    label: 'Skin Beauty',
+    description: 'Smooth and brighten skin',
+    icon: '🌸',
+    gradient: 'from-pink-500 to-rose-500',
+  },
 ];
 
 export default function TransformationTypeSelector({
@@ -68,7 +75,7 @@ export default function TransformationTypeSelector({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-6">
         {TRANSFORMATION_TYPES.map((type, index) => (
           <motion.button
             key={type.id}

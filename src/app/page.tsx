@@ -107,6 +107,13 @@ export default function HomePage() {
       gradient: 'from-blue-500 to-purple-500',
     },
     {
+      icon: '🌸',
+      title: 'Skin Beauty',
+      description: 'Smooth and brighten skin',
+      status: 'Available',
+      gradient: 'from-pink-500 to-rose-500',
+    },
+    {
       icon: '🎨',
       title: 'Artistic Filters',
       description: 'Transform into art styles',

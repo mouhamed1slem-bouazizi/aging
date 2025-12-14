@@ -12,6 +12,7 @@ import {
   LipColorSelector,
   FaceBeautySelector,
   FaceSlimmingSelector,
+  SkinBeautySelector,
   TransformationTypeSelector,
   LoadingAnimation,
   ImageComparison,
@@ -19,11 +20,11 @@ import {
   ErrorDisplay,
   ProtectedRoute,
 } from '@/components';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams } from '@/types';
 import { AGE_CATEGORIES, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
 import { compressImage } from '@/lib/utils';
 
-type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'processing' | 'result' | 'error';
+type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'processing' | 'result' | 'error';
 
 export default function TransformPage() {
   const [step, setStep] = useState<Step>('select-type');
@@ -38,6 +39,7 @@ export default function TransformPage() {
   const [selectedLipColor, setSelectedLipColor] = useState<LipColorRGBA | null>(null);
   const [selectedBeauty, setSelectedBeauty] = useState<FaceBeautyParams | null>(null);
   const [selectedSlimming, setSelectedSlimming] = useState<FaceSlimmingParams | null>(null);
+  const [selectedSkin, setSelectedSkin] = useState<SkinBeautyParams | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleImageSelect = useCallback(async (imageSrc: string) => {
@@ -60,6 +62,8 @@ export default function TransformPage() {
         setStep('select-beauty');
       } else if (transformationType === 'face-slimming') {
         setStep('select-slimming');
+      } else if (transformationType === 'skin-beauty') {
+        setStep('select-skin');
       }
     } catch (err) {
       console.error('Image compression error:', err);
@@ -79,6 +83,8 @@ export default function TransformPage() {
         setStep('select-beauty');
       } else if (transformationType === 'face-slimming') {
         setStep('select-slimming');
+      } else if (transformationType === 'skin-beauty') {
+        setStep('select-skin');
       }
     }
   }, [transformationType]);
@@ -299,6 +305,46 @@ export default function TransformPage() {
     }
   }, [originalImage]);
 
+  const handleSkinSelect = useCallback(async (skinParams: SkinBeautyParams) => {
+    setSelectedSkin(skinParams);
+    
+    if (!originalImage) {
+      setError('No image selected');
+      setStep('error');
+      return;
+    }
+
+    setStep('processing');
+    setError(null);
+
+    try {
+      const response = await fetch('/api/transform', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image: originalImage,
+          transformationType: 'skin-beauty',
+          skinBeauty: skinParams,
+        }),
+      });
+
+      const data: TransformResponse = await response.json();
+
+      if (!data.success || !data.transformedImage) {
+        throw new Error(data.error || 'Transformation failed');
+      }
+
+      setTransformedImage(data.transformedImage);
+      setStep('result');
+    } catch (err) {
+      console.error('Transform error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to transform image');
+      setStep('error');
+    }
+  }, [originalImage]);
+
   const handleStartOver = useCallback(() => {
     setOriginalImage(null);
     setTransformedImage(null);
@@ -310,6 +356,7 @@ export default function TransformPage() {
     setSelectedLipColor(null);
     setSelectedBeauty(null);
     setSelectedSlimming(null);
+    setSelectedSkin(null);
     setError(null);
     setStep('select-type');
   }, []);
@@ -323,6 +370,7 @@ export default function TransformPage() {
     setSelectedLipColor(null);
     setSelectedBeauty(null);
     setSelectedSlimming(null);
+    setSelectedSkin(null);
     setError(null);
     setStep('select-type');
   }, []);
@@ -331,7 +379,7 @@ export default function TransformPage() {
     if (step === 'upload') {
       setStep('select-type');
       setOriginalImage(null);
-    } else if (step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color' || step === 'select-beauty' || step === 'select-slimming') {
+    } else if (step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color' || step === 'select-beauty' || step === 'select-slimming' || step === 'select-skin') {
       setStep('upload');
       setSelectedAge(null);
       setSelectedGender(null);
@@ -339,6 +387,7 @@ export default function TransformPage() {
       setSelectedLipColor(null);
       setSelectedBeauty(null);
       setSelectedSlimming(null);
+      setSelectedSkin(null);
     } else if (step === 'error') {
       if (transformationType) {
         if (transformationType === 'age') {
@@ -353,6 +402,8 @@ export default function TransformPage() {
           setStep('select-beauty');
         } else if (transformationType === 'face-slimming') {
           setStep('select-slimming');
+        } else if (transformationType === 'skin-beauty') {
+          setStep('select-skin');
         }
       } else if (originalImage) {
         setStep('upload');
@@ -375,10 +426,12 @@ export default function TransformPage() {
       handleBeautySelect(selectedBeauty);
     } else if (transformationType === 'face-slimming' && selectedSlimming && originalImage) {
       handleSlimmingSelect(selectedSlimming);
+    } else if (transformationType === 'skin-beauty' && selectedSkin && originalImage) {
+      handleSkinSelect(selectedSkin);
     } else {
       handleGoBack();
     }
-  }, [transformationType, selectedAge, selectedGender, selectedFilter, filterStrength, selectedLipColor, selectedBeauty, selectedSlimming, originalImage, handleAgeSelect, handleGenderSelect, handleFilterSelect, handleLipColorSelect, handleBeautySelect, handleSlimmingSelect, handleGoBack]);
+  }, [transformationType, selectedAge, selectedGender, selectedFilter, filterStrength, selectedLipColor, selectedBeauty, selectedSlimming, selectedSkin, originalImage, handleAgeSelect, handleGenderSelect, handleFilterSelect, handleLipColorSelect, handleBeautySelect, handleSlimmingSelect, handleSkinSelect, handleGoBack]);
 
   const getStepTitle = () => {
     switch (step) {
@@ -398,6 +451,8 @@ export default function TransformPage() {
         return 'Face Beauty Enhancement';
       case 'select-slimming':
         return 'Face Slimming';
+      case 'select-skin':
+        return 'Skin Beauty Enhancement';
       case 'processing':
         return 'Processing';
       case 'result':
@@ -416,6 +471,8 @@ export default function TransformPage() {
           return 'Your Enhanced Beauty';
         } else if (transformationType === 'face-slimming') {
           return 'Your Slimmed Face';
+        } else if (transformationType === 'skin-beauty') {
+          return 'Your Beautiful Skin';
         }
         return 'Your Transformation';
       case 'error':
@@ -439,6 +496,8 @@ export default function TransformPage() {
       return 'Face Beauty';
     } else if (transformationType === 'face-slimming') {
       return 'Face Slimming';
+    } else if (transformationType === 'skin-beauty') {
+      return 'Skin Beauty';
     }
     return 'Transformed';
   };
@@ -450,7 +509,7 @@ export default function TransformPage() {
       <div className="sticky top-16 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            {(step === 'upload' || step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color' || step === 'select-beauty' || step === 'select-slimming' || step === 'error') && (
+            {(step === 'upload' || step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color' || step === 'select-beauty' || step === 'select-slimming' || step === 'select-skin' || step === 'error') && (
               <button
                 onClick={handleGoBack}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -470,6 +529,7 @@ export default function TransformPage() {
                   {step === 'select-lip-color' && 'Choose your perfect lip color'}
                   {step === 'select-beauty' && 'Adjust beauty enhancement levels'}
                   {step === 'select-slimming' && 'Adjust face slimming intensity'}
+                  {step === 'select-skin' && 'Adjust skin smoothing and whitening'}
                   {step === 'result' && 'Your transformation is ready!'}
                 </p>
               )}
@@ -482,7 +542,7 @@ export default function TransformPage() {
               <div
                 key={s}
                 className={`h-1 flex-1 rounded-full transition-colors ${
-                  ['select-type', 'upload', 'select-age', 'select-gender', 'select-filter', 'select-lip-color', 'select-beauty', 'select-slimming', 'processing', 'result'].indexOf(step) >= index
+                  ['select-type', 'upload', 'select-age', 'select-gender', 'select-filter', 'select-lip-color', 'select-beauty', 'select-slimming', 'select-skin', 'processing', 'result'].indexOf(step) >= index
                     ? 'bg-gradient-to-r from-purple-500 to-pink-500'
                     : 'bg-gray-200'
                 }`}
@@ -598,8 +658,20 @@ export default function TransformPage() {
             </motion.div>
           )}
 
+          {/* Skin Beauty Selection Step */}
+          {step === 'select-skin' && originalImage && (
+            <motion.div
+              key="select-skin"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+            >
+              <SkinBeautySelector onSkinSelect={handleSkinSelect} />
+            </motion.div>
+          )}
+
           {/* Processing Step */}
-          {step === 'processing' && (selectedAge || selectedGender || selectedFilter || selectedLipColor || selectedBeauty || selectedSlimming) && (
+          {step === 'processing' && (selectedAge || selectedGender || selectedFilter || selectedLipColor || selectedBeauty || selectedSlimming || selectedSkin) && (
             <motion.div
               key="processing"
               initial={{ opacity: 0, scale: 0.95 }}

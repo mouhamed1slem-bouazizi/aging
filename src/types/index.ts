@@ -24,7 +24,7 @@ export type FaceFilterType =
   | 'nostalgia' | 'cheese' | 'butterfly';
 
 // Transformation type
-export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming';
+export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty';
 
 export interface AgeCategoryOption {
   id: AgeCategory;
@@ -71,6 +71,12 @@ export interface FaceSlimmingParams {
   slimDegree: number; // 0-2.0 Slimming strength
 }
 
+// Skin beauty parameters
+export interface SkinBeautyParams {
+  retouchDegree: number;   // 0-1.5 Dermabrasion intensity
+  whiteningDegree: number; // 0-1.5 Whitening strength
+}
+
 export interface FaceFilterOption {
   id: FaceFilterType;
   label: string;
@@ -91,6 +97,7 @@ export interface TransformRequest {
   lipColor?: LipColorRGBA; // Lip color for lip-color transformation
   faceBeauty?: FaceBeautyParams; // Face beauty parameters
   faceSlimming?: FaceSlimmingParams; // Face slimming parameters
+  skinBeauty?: SkinBeautyParams; // Skin beauty parameters
 }
 
 export interface TransformResponse {
@@ -106,7 +113,7 @@ export interface ImageState {
 }
 
 export interface AppState {
-  step: 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'processing' | 'result' | 'error';
+  step: 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'processing' | 'result' | 'error';
   image: ImageState;
   transformationType: TransformationType | null;
   selectedAge: AgeCategory | null;
@@ -116,6 +123,7 @@ export interface AppState {
   selectedLipColor: LipColorRGBA | null;
   selectedBeauty: FaceBeautyParams | null;
   selectedSlimming: FaceSlimmingParams | null;
+  selectedSkin: SkinBeautyParams | null;
   isLoading: boolean;
   error: string | null;
 }
