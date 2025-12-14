@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AGE_CATEGORIES, AILAB_API_URL, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams } from '@/types';
 
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest): Promise<NextResponse<TransformResponse>> {
   try {
     const body = await request.json();
-    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty } = body as { 
+    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming } = body as { 
       image: string; 
       transformationType: TransformationType;
       ageCategory?: AgeCategory;
@@ -16,6 +16,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       filterStrength?: number;
       lipColor?: LipColorRGBA;
       faceBeauty?: FaceBeautyParams;
+      faceSlimming?: FaceSlimmingParams;
     };
 
     // Validate inputs
@@ -138,6 +139,19 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       // Face beauty uses different endpoint
       apiUrl = 'https://www.ailabapi.com/api/portrait/effects/face-beauty';
       console.log(`Applying face beauty: sharp=${faceBeauty.sharp}, smooth=${faceBeauty.smooth}, white=${faceBeauty.white}`);
+    }
+    // Handle face slimming transformation
+    else if (transformationType === 'face-slimming') {
+      if (!faceSlimming) {
+        return NextResponse.json(
+          { success: false, error: 'No slimming parameters provided' },
+          { status: 400 }
+        );
+      }
+
+      // Face slimming uses different endpoint
+      apiUrl = 'https://www.ailabapi.com/api/portrait/effects/smart-face-slimming';
+      console.log(`Applying face slimming: slimDegree=${faceSlimming.slimDegree}`);
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -178,6 +192,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       formData.append('sharp', faceBeauty!.sharp.toString());
       formData.append('smooth', faceBeauty!.smooth.toString());
       formData.append('white', faceBeauty!.white.toString());
+    } else if (transformationType === 'face-slimming') {
+      // Face slimming API requires slim_degree parameter
+      formData.append('slim_degree', faceSlimming!.slimDegree.toString());
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -218,7 +235,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
     // Extract the result image
     let transformedImage: string | undefined;
 
-    // Face filter returns image_url, lip color returns result_image, face beauty returns image_url, face attribute editing returns result.image
+    // Face filter returns image_url, lip color returns result_image, face beauty returns image_url, face slimming returns image_url, face attribute editing returns result.image
     if (transformationType === 'filter' && data.data?.image_url) {
       const imageUrl = data.data.image_url;
       // Fetch the image from URL and convert to base64
@@ -241,6 +258,21 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
         ? resultImage 
         : `data:image/jpeg;base64,${resultImage}`;
     } else if (transformationType === 'face-beauty' && data.data?.image_url) {
+      const imageUrl = data.data.image_url;
+      // Fetch the image from URL and convert to base64
+      try {
+        const imageResponse = await fetch(imageUrl);
+        const imageArrayBuffer = await imageResponse.arrayBuffer();
+        const base64 = Buffer.from(imageArrayBuffer).toString('base64');
+        transformedImage = `data:image/jpeg;base64,${base64}`;
+      } catch (fetchError) {
+        console.error('Error fetching result image:', fetchError);
+        return NextResponse.json(
+          { success: false, error: 'Failed to fetch transformed image' },
+          { status: 500 }
+        );
+      }
+    } else if (transformationType === 'face-slimming' && data.data?.image_url) {
       const imageUrl = data.data.image_url;
       // Fetch the image from URL and convert to base64
       try {

@@ -100,6 +100,13 @@ export default function HomePage() {
       gradient: 'from-purple-500 to-indigo-500',
     },
     {
+      icon: '🌟',
+      title: 'Face Slimming',
+      description: 'Slim your face naturally',
+      status: 'Available',
+      gradient: 'from-blue-500 to-purple-500',
+    },
+    {
       icon: '🎨',
       title: 'Artistic Filters',
       description: 'Transform into art styles',
