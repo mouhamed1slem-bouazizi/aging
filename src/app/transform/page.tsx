@@ -17,6 +17,7 @@ import {
   SmartBeautySelector,
   HairstyleSelector,
   ExpressionSelector,
+  CartoonSelector,
   TransformationTypeSelector,
   LoadingAnimation,
   ImageComparison,
@@ -24,11 +25,11 @@ import {
   ErrorDisplay,
   ProtectedRoute,
 } from '@/components';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams } from '@/types';
 import { AGE_CATEGORIES, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
 import { compressImage } from '@/lib/utils';
 
-type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'select-fusion' | 'select-smart-beauty' | 'select-hairstyle' | 'select-expression' | 'processing' | 'result' | 'error';
+type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'select-fusion' | 'select-smart-beauty' | 'select-hairstyle' | 'select-expression' | 'select-cartoon' | 'processing' | 'result' | 'error';
 
 export default function TransformPage() {
   const [step, setStep] = useState<Step>('select-type');
@@ -48,6 +49,7 @@ export default function TransformPage() {
   const [selectedSmartBeauty, setSelectedSmartBeauty] = useState<SmartBeautyParams | null>(null);
   const [selectedHairstyle, setSelectedHairstyle] = useState<HairstyleParams | null>(null);
   const [selectedExpression, setSelectedExpression] = useState<ExpressionParams | null>(null);
+  const [selectedCartoon, setSelectedCartoon] = useState<CartoonParams | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleImageSelect = useCallback(async (imageSrc: string) => {
@@ -80,6 +82,8 @@ export default function TransformPage() {
         setStep('select-hairstyle');
       } else if (transformationType === 'expression') {
         setStep('select-expression');
+      } else if (transformationType === 'cartoon') {
+        setStep('select-cartoon');
       }
     } catch (err) {
       console.error('Image compression error:', err);
@@ -109,6 +113,8 @@ export default function TransformPage() {
         setStep('select-hairstyle');
       } else if (transformationType === 'expression') {
         setStep('select-expression');
+      } else if (transformationType === 'cartoon') {
+        setStep('select-cartoon');
       }
     }
   }, [transformationType]);
@@ -529,6 +535,46 @@ export default function TransformPage() {
     }
   }, [originalImage]);
 
+  const handleCartoonSelect = useCallback(async (cartoonParams: CartoonParams) => {
+    setSelectedCartoon(cartoonParams);
+    
+    if (!originalImage) {
+      setError('No image selected');
+      setStep('error');
+      return;
+    }
+
+    setStep('processing');
+    setError(null);
+
+    try {
+      const response = await fetch('/api/transform', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image: originalImage,
+          transformationType: 'cartoon',
+          cartoon: cartoonParams,
+        }),
+      });
+
+      const data: TransformResponse = await response.json();
+
+      if (!data.success || !data.transformedImage) {
+        throw new Error(data.error || 'Transformation failed');
+      }
+
+      setTransformedImage(data.transformedImage);
+      setStep('result');
+    } catch (err) {
+      console.error('Transform error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to transform image');
+      setStep('error');
+    }
+  }, [originalImage]);
+
   const handleStartOver = useCallback(() => {
     setOriginalImage(null);
     setTransformedImage(null);
@@ -545,6 +591,7 @@ export default function TransformPage() {
     setSelectedSmartBeauty(null);
     setSelectedHairstyle(null);
     setSelectedExpression(null);
+    setSelectedCartoon(null);
     setError(null);
     setStep('select-type');
   }, []);
@@ -563,6 +610,7 @@ export default function TransformPage() {
     setSelectedSmartBeauty(null);
     setSelectedHairstyle(null);
     setSelectedExpression(null);
+    setSelectedCartoon(null);
     setError(null);
     setStep('select-type');
   }, []);
@@ -571,7 +619,7 @@ export default function TransformPage() {
     if (step === 'upload') {
       setStep('select-type');
       setOriginalImage(null);
-    } else if (step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color' || step === 'select-beauty' || step === 'select-slimming' || step === 'select-skin' || step === 'select-fusion' || step === 'select-smart-beauty' || step === 'select-hairstyle' || step === 'select-expression') {
+    } else if (step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color' || step === 'select-beauty' || step === 'select-slimming' || step === 'select-skin' || step === 'select-fusion' || step === 'select-smart-beauty' || step === 'select-hairstyle' || step === 'select-expression' || step === 'select-cartoon') {
       setStep('upload');
       setSelectedAge(null);
       setSelectedGender(null);
@@ -634,10 +682,12 @@ export default function TransformPage() {
       handleHairstyleSelect(selectedHairstyle);
     } else if (transformationType === 'expression' && selectedExpression && originalImage) {
       handleExpressionSelect(selectedExpression);
+    } else if (transformationType === 'cartoon' && selectedCartoon && originalImage) {
+      handleCartoonSelect(selectedCartoon);
     } else {
       handleGoBack();
     }
-  }, [transformationType, selectedAge, selectedGender, selectedFilter, filterStrength, selectedLipColor, selectedBeauty, selectedSlimming, selectedSkin, selectedFusion, selectedSmartBeauty, selectedHairstyle, selectedExpression, originalImage, handleAgeSelect, handleGenderSelect, handleFilterSelect, handleLipColorSelect, handleBeautySelect, handleSlimmingSelect, handleSkinSelect, handleFusionSelect, handleSmartBeautySelect, handleHairstyleSelect, handleExpressionSelect, handleGoBack]);
+  }, [transformationType, selectedAge, selectedGender, selectedFilter, filterStrength, selectedLipColor, selectedBeauty, selectedSlimming, selectedSkin, selectedFusion, selectedSmartBeauty, selectedHairstyle, selectedExpression, selectedCartoon, originalImage, handleAgeSelect, handleGenderSelect, handleFilterSelect, handleLipColorSelect, handleBeautySelect, handleSlimmingSelect, handleSkinSelect, handleFusionSelect, handleSmartBeautySelect, handleHairstyleSelect, handleExpressionSelect, handleCartoonSelect, handleGoBack]);
 
   const getStepTitle = () => {
     switch (step) {
@@ -667,6 +717,8 @@ export default function TransformPage() {
         return 'Choose Hairstyle';
       case 'select-expression':
         return 'Change Expression';
+      case 'select-cartoon':
+        return 'Cartoon Yourself';
       case 'processing':
         return 'Processing';
       case 'result':
@@ -731,7 +783,7 @@ export default function TransformPage() {
       <div className="sticky top-16 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            {(step === 'upload' || step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color' || step === 'select-beauty' || step === 'select-slimming' || step === 'select-skin' || step === 'select-fusion' || step === 'select-smart-beauty' || step === 'select-hairstyle' || step === 'select-expression' || step === 'error') && (
+            {(step === 'upload' || step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color' || step === 'select-beauty' || step === 'select-slimming' || step === 'select-skin' || step === 'select-fusion' || step === 'select-smart-beauty' || step === 'select-hairstyle' || step === 'select-expression' || step === 'select-cartoon' || step === 'error') && (
               <button
                 onClick={handleGoBack}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -756,6 +808,7 @@ export default function TransformPage() {
                   {step === 'select-smart-beauty' && 'Adjust AI beauty enhancement'}
                   {step === 'select-hairstyle' && 'Choose your perfect hairstyle and color'}
                   {step === 'select-expression' && 'Select your desired facial expression'}
+                  {step === 'select-cartoon' && 'Choose your favorite cartoon style'}
                   {step === 'result' && 'Your transformation is ready!'}
                 </p>
               )}
@@ -944,8 +997,20 @@ export default function TransformPage() {
             </motion.div>
           )}
 
+          {/* Cartoon Selection Step */}
+          {step === 'select-cartoon' && originalImage && (
+            <motion.div
+              key="select-cartoon"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+            >
+              <CartoonSelector onCartoonSelect={handleCartoonSelect} />
+            </motion.div>
+          )}
+
           {/* Processing Step */}
-          {step === 'processing' && (selectedAge || selectedGender || selectedFilter || selectedLipColor || selectedBeauty || selectedSlimming || selectedSkin || selectedFusion || selectedSmartBeauty || selectedHairstyle || selectedExpression) && (
+          {step === 'processing' && (selectedAge || selectedGender || selectedFilter || selectedLipColor || selectedBeauty || selectedSlimming || selectedSkin || selectedFusion || selectedSmartBeauty || selectedHairstyle || selectedExpression || selectedCartoon) && (
             <motion.div
               key="processing"
               initial={{ opacity: 0, scale: 0.95 }}

@@ -24,7 +24,7 @@ export type FaceFilterType =
   | 'nostalgia' | 'cheese' | 'butterfly';
 
 // Transformation type
-export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle' | 'expression';
+export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle' | 'expression' | 'cartoon';
 
 export interface AgeCategoryOption {
   id: AgeCategory;
@@ -107,6 +107,13 @@ export interface ExpressionParams {
   expression: FacialExpression;
 }
 
+// Cartoon types
+export type CartoonType = 'jpcartoon' | 'anime' | 'claborate' | 'hongkong' | 'comic' | 'animation3d' | 'handdrawn' | 'sketch' | 'full' | 'artstyle' | 'classic_cartoon' | 'tccartoon' | 'hkcartoon' | '3d_cartoon' | 'pixar' | 'pixar_plus' | 'angel' | 'angel_plus' | 'demon' | 'ukiyoe_cartoon' | 'amcartoon' | '3d' | '3d_game' | 'jpcartoon_head' | 'head';
+
+export interface CartoonParams {
+  cartoonType: CartoonType;
+}
+
 export interface FaceFilterOption {
   id: FaceFilterType;
   label: string;
@@ -132,6 +139,7 @@ export interface TransformRequest {
   smartBeauty?: SmartBeautyParams; // Smart beauty parameters
   hairstyle?: HairstyleParams; // Hairstyle changer parameters
   expression?: ExpressionParams; // Facial expression parameters
+  cartoon?: CartoonParams; // Cartoon animation parameters
 }
 
 export interface TransformResponse {
@@ -162,6 +170,7 @@ export interface AppState {
   selectedSmartBeauty: SmartBeautyParams | null;
   selectedHairstyle: HairstyleParams | null;
   selectedExpression: ExpressionParams | null;
+  selectedCartoon: CartoonParams | null;
   isLoading: boolean;
   error: string | null;
 }

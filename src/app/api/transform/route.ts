@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AGE_CATEGORIES, AILAB_API_URL, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams } from '@/types';
 
 export const maxDuration = 300; // Increased for async operations
 
 export async function POST(request: NextRequest): Promise<NextResponse<TransformResponse>> {
   try {
     const body = await request.json();
-    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression } = body as { 
+    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression, cartoon } = body as { 
       image: string; 
       transformationType: TransformationType;
       ageCategory?: AgeCategory;
@@ -22,6 +22,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       smartBeauty?: SmartBeautyParams;
       hairstyle?: HairstyleParams;
       expression?: ExpressionParams;
+      cartoon?: CartoonParams;
     };
 
     // Validate inputs
@@ -222,6 +223,17 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       // Expression uses different endpoint
       apiUrl = 'https://www.ailabapi.com/api/portrait/effects/emotion-editor';
       console.log(`Applying expression: ${expression.expression}`);
+    } else if (transformationType === 'cartoon') {
+      if (!cartoon) {
+        return NextResponse.json(
+          { success: false, error: 'No cartoon style selected' },
+          { status: 400 }
+        );
+      }
+
+      // Cartoon uses portrait animation endpoint
+      apiUrl = 'https://www.ailabapi.com/api/portrait/effects/portrait-animation';
+      console.log(`Applying cartoon style: ${cartoon.cartoonType}`);
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -299,6 +311,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
     } else if (transformationType === 'expression') {
       // Expression API requires service_choice parameter
       formData.append('service_choice', expression!.expression.toString());
+    } else if (transformationType === 'cartoon') {
+      // Cartoon API requires type parameter
+      formData.append('type', cartoon!.cartoonType);
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -535,6 +550,24 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       transformedImage = resultImage.startsWith('data:') 
         ? resultImage 
         : `data:image/jpeg;base64,${resultImage}`;
+    } else if (transformationType === 'cartoon' && data.data?.image_url) {
+      // Cartoon returns image_url - need to download it
+      const imageUrl = data.data.image_url;
+      console.log(`Downloading cartoon image from: ${imageUrl}`);
+      
+      try {
+        const imageResponse = await fetch(imageUrl);
+        if (!imageResponse.ok) {
+          throw new Error(`Failed to download image: ${imageResponse.status}`);
+        }
+        
+        const imageBuffer = await imageResponse.arrayBuffer();
+        const base64Image = Buffer.from(imageBuffer).toString('base64');
+        transformedImage = `data:image/jpeg;base64,${base64Image}`;
+      } catch (downloadError) {
+        console.error('Error downloading cartoon image:', downloadError);
+        throw new Error('Failed to download transformed image');
+      }
     } else if (data.result?.image) {
       const resultImage = data.result.image;
       // The API returns base64 without prefix, add it

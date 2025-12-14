@@ -16,6 +16,7 @@ export { default as FaceFusionSelector } from './FaceFusionSelector';
 export { default as SmartBeautySelector } from './SmartBeautySelector';
 export { default as HairstyleSelector } from './HairstyleSelector';
 export { default as ExpressionSelector } from './ExpressionSelector';
+export { default as CartoonSelector } from './CartoonSelector';
 export { default as TransformationTypeSelector } from './TransformationTypeSelector';
 export { default as LoadingAnimation } from './LoadingAnimation';
 export { default as ImageComparison } from './ImageComparison';

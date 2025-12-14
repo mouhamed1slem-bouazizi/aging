@@ -86,6 +86,13 @@ const TRANSFORMATION_TYPES = [
     icon: '😊',
     gradient: 'from-yellow-500 to-orange-500',
   },
+  {
+    id: 'cartoon' as TransformationType,
+    label: 'Cartoon Yourself',
+    description: 'Transform into cartoon styles',
+    icon: '🎨',
+    gradient: 'from-indigo-500 to-purple-500',
+  },
 ];
 
 export default function TransformationTypeSelector({
