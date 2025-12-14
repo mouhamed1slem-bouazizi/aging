@@ -79,6 +79,13 @@ const TRANSFORMATION_TYPES = [
     icon: '✂️',
     gradient: 'from-purple-500 to-pink-500',
   },
+  {
+    id: 'expression' as TransformationType,
+    label: 'Facial Expression',
+    description: 'Change your facial emotions',
+    icon: '😊',
+    gradient: 'from-yellow-500 to-orange-500',
+  },
 ];
 
 export default function TransformationTypeSelector({

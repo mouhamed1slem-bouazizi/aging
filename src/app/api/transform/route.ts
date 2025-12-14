@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AGE_CATEGORIES, AILAB_API_URL, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams } from '@/types';
 
 export const maxDuration = 300; // Increased for async operations
 
 export async function POST(request: NextRequest): Promise<NextResponse<TransformResponse>> {
   try {
     const body = await request.json();
-    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle } = body as { 
+    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression } = body as { 
       image: string; 
       transformationType: TransformationType;
       ageCategory?: AgeCategory;
@@ -21,6 +21,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       faceFusion?: FaceFusionParams;
       smartBeauty?: SmartBeautyParams;
       hairstyle?: HairstyleParams;
+      expression?: ExpressionParams;
     };
 
     // Validate inputs
@@ -208,6 +209,19 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       // Hairstyle uses different endpoint and is async
       apiUrl = 'https://www.ailabapi.com/api/portrait/effects/hairstyle-editor-pro';
       console.log(`Applying hairstyle: ${hairstyle.hairStyle}, color=${hairstyle.color || 'none'}`);
+    }
+    // Handle facial expression transformation
+    else if (transformationType === 'expression') {
+      if (!expression) {
+        return NextResponse.json(
+          { success: false, error: 'No expression selected' },
+          { status: 400 }
+        );
+      }
+
+      // Expression uses different endpoint
+      apiUrl = 'https://www.ailabapi.com/api/portrait/effects/emotion-editor';
+      console.log(`Applying expression: ${expression.expression}`);
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -226,8 +240,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
     // Create FormData for the API request
     const formData = new FormData();
     const blob = new Blob([imageBuffer], { type: mimeType });
-    // Face fusion and smart beauty use 'image_target' field name, others use 'image'
-    const imageFieldName = (transformationType === 'face-fusion' || transformationType === 'smart-beauty') ? 'image_target' : 'image';
+    // Face fusion, smart beauty, and expression use 'image_target' field name, others use 'image'
+    const imageFieldName = (transformationType === 'face-fusion' || transformationType === 'smart-beauty' || transformationType === 'expression') ? 'image_target' : 'image';
     formData.append(imageFieldName, blob, `photo.${extension}`);
     
     // Add parameters based on transformation type
@@ -282,6 +296,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
         formData.append('color', hairstyle!.color);
       }
       formData.append('image_size', '1'); // Return 1 result image
+    } else if (transformationType === 'expression') {
+      // Expression API requires service_choice parameter
+      formData.append('service_choice', expression!.expression.toString());
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -509,6 +526,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
     } else if (transformationType === 'smart-beauty' && data.data?.image) {
       const resultImage = data.data.image;
       // Smart beauty returns base64 without prefix, add it
+      transformedImage = resultImage.startsWith('data:') 
+        ? resultImage 
+        : `data:image/jpeg;base64,${resultImage}`;
+    } else if (transformationType === 'expression' && data.data?.image) {
+      const resultImage = data.data.image;
+      // Expression returns base64 without prefix, add it
       transformedImage = resultImage.startsWith('data:') 
         ? resultImage 
         : `data:image/jpeg;base64,${resultImage}`;

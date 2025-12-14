@@ -24,7 +24,7 @@ export type FaceFilterType =
   | 'nostalgia' | 'cheese' | 'butterfly';
 
 // Transformation type
-export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle';
+export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle' | 'expression';
 
 export interface AgeCategoryOption {
   id: AgeCategory;
@@ -100,6 +100,13 @@ export interface HairstyleParams {
   color?: HairColor;
 }
 
+// Facial expression types
+export type FacialExpression = 10 | 11 | 12 | 13 | 14 | 15 | 16 | 100;
+
+export interface ExpressionParams {
+  expression: FacialExpression;
+}
+
 export interface FaceFilterOption {
   id: FaceFilterType;
   label: string;
@@ -124,6 +131,7 @@ export interface TransformRequest {
   faceFusion?: FaceFusionParams; // Face fusion parameters
   smartBeauty?: SmartBeautyParams; // Smart beauty parameters
   hairstyle?: HairstyleParams; // Hairstyle changer parameters
+  expression?: ExpressionParams; // Facial expression parameters
 }
 
 export interface TransformResponse {
@@ -153,6 +161,7 @@ export interface AppState {
   selectedFusion: FaceFusionParams | null;
   selectedSmartBeauty: SmartBeautyParams | null;
   selectedHairstyle: HairstyleParams | null;
+  selectedExpression: ExpressionParams | null;
   isLoading: boolean;
   error: string | null;
 }
