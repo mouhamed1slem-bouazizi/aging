@@ -24,7 +24,7 @@ export type FaceFilterType =
   | 'nostalgia' | 'cheese' | 'butterfly';
 
 // Transformation type
-export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty';
+export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle';
 
 export interface AgeCategoryOption {
   id: AgeCategory;
@@ -89,6 +89,17 @@ export interface SmartBeautyParams {
   multiFace: boolean;   // Process all faces or just largest
 }
 
+// Hairstyle changer parameters
+export type HairGender = 'male' | 'female';
+export type HairStyle = string; // Various hairstyle codes
+export type HairColor = 'blonde' | 'platinumBlonde' | 'brown' | 'lightBrown' | 'blue' | 'lightBlue' | 'purple' | 'lightPurple' | 'pink' | 'black' | 'white' | 'grey' | 'silver' | 'red' | 'orange' | 'green' | 'gradient' | 'multicolored' | 'darkBlue' | 'burgundy' | 'darkGreen';
+
+export interface HairstyleParams {
+  gender: HairGender;
+  hairStyle: HairStyle;
+  color?: HairColor;
+}
+
 export interface FaceFilterOption {
   id: FaceFilterType;
   label: string;
@@ -112,6 +123,7 @@ export interface TransformRequest {
   skinBeauty?: SkinBeautyParams; // Skin beauty parameters
   faceFusion?: FaceFusionParams; // Face fusion parameters
   smartBeauty?: SmartBeautyParams; // Smart beauty parameters
+  hairstyle?: HairstyleParams; // Hairstyle changer parameters
 }
 
 export interface TransformResponse {
@@ -127,7 +139,7 @@ export interface ImageState {
 }
 
 export interface AppState {
-  step: 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'select-fusion' | 'select-smart-beauty' | 'processing' | 'result' | 'error';
+  step: 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'select-fusion' | 'select-smart-beauty' | 'select-hairstyle' | 'processing' | 'result' | 'error';
   image: ImageState;
   transformationType: TransformationType | null;
   selectedAge: AgeCategory | null;
@@ -140,6 +152,7 @@ export interface AppState {
   selectedSkin: SkinBeautyParams | null;
   selectedFusion: FaceFusionParams | null;
   selectedSmartBeauty: SmartBeautyParams | null;
+  selectedHairstyle: HairstyleParams | null;
   isLoading: boolean;
   error: string | null;
 }

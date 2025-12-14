@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AGE_CATEGORIES, AILAB_API_URL, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams } from '@/types';
 
-export const maxDuration = 60;
+export const maxDuration = 300; // Increased for async operations
 
 export async function POST(request: NextRequest): Promise<NextResponse<TransformResponse>> {
   try {
     const body = await request.json();
-    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty } = body as { 
+    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle } = body as { 
       image: string; 
       transformationType: TransformationType;
       ageCategory?: AgeCategory;
@@ -20,6 +20,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       skinBeauty?: SkinBeautyParams;
       faceFusion?: FaceFusionParams;
       smartBeauty?: SmartBeautyParams;
+      hairstyle?: HairstyleParams;
     };
 
     // Validate inputs
@@ -194,6 +195,19 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       // Smart beauty uses different endpoint
       apiUrl = 'https://www.ailabapi.com/api/portrait/effects/smart-beauty';
       console.log(`Applying smart beauty: level=${smartBeauty.beautyLevel}, multiFace=${smartBeauty.multiFace}`);
+    }
+    // Handle hairstyle transformation (async)
+    else if (transformationType === 'hairstyle') {
+      if (!hairstyle) {
+        return NextResponse.json(
+          { success: false, error: 'No hairstyle parameters provided' },
+          { status: 400 }
+        );
+      }
+
+      // Hairstyle uses different endpoint and is async
+      apiUrl = 'https://www.ailabapi.com/api/portrait/effects/hairstyle-editor-pro';
+      console.log(`Applying hairstyle: ${hairstyle.hairStyle}, color=${hairstyle.color || 'none'}`);
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -259,6 +273,15 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       formData.append('beauty_level', smartBeauty!.beautyLevel.toString());
       formData.append('multi_face', smartBeauty!.multiFace ? '1' : '0');
       formData.append('task_type', 'sync');
+    } else if (transformationType === 'hairstyle') {
+      // Hairstyle API requires auto, hair_style, color (optional), image_size, and task_type
+      formData.append('auto', '1');
+      formData.append('hair_style', hairstyle!.hairStyle);
+      if (hairstyle!.color) {
+        formData.append('color', hairstyle!.color);
+      }
+      formData.append('image_size', '1'); // Return 1 result image
+      formData.append('task_type', 'async'); // Async task
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -293,6 +316,105 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       return NextResponse.json(
         { success: false, error: data.error_msg || 'Transformation failed' },
         { status: 400 }
+      );
+    }
+
+    // Handle async hairstyle transformation
+    if (transformationType === 'hairstyle') {
+      const taskId = data.data?.task_id;
+      if (!taskId) {
+        console.error('No task_id in hairstyle response:', data);
+        return NextResponse.json(
+          { success: false, error: 'Failed to start hairstyle transformation' },
+          { status: 500 }
+        );
+      }
+
+      console.log(`Hairstyle task started: ${taskId}`);
+
+      // Poll for task completion
+      const checkUrl = 'https://www.ailabapi.com/api/common/query-async-task-result';
+      const maxAttempts = 60; // Maximum 60 attempts (5 minutes with 5s intervals)
+      let attempts = 0;
+
+      while (attempts < maxAttempts) {
+        attempts++;
+        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+
+        const checkResponse = await fetch(checkUrl, {
+          method: 'POST',
+          headers: {
+            'ailabapi-api-key': ailabApiKey,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `task_id=${taskId}`,
+        });
+
+        if (!checkResponse.ok) {
+          console.error('Task check error:', checkResponse.status);
+          continue; // Retry
+        }
+
+        const checkData = await checkResponse.json();
+        console.log(`Task check attempt ${attempts}:`, checkData.data?.task_status);
+
+        if (checkData.error_code !== 0) {
+          console.error('Task check returned error:', checkData);
+          return NextResponse.json(
+            { success: false, error: checkData.error_msg || 'Task check failed' },
+            { status: 400 }
+          );
+        }
+
+        const taskStatus = checkData.data?.task_status;
+
+        if (taskStatus === 2) {
+          // Task completed successfully
+          const imageList = checkData.data?.image_list;
+          if (!imageList || imageList.length === 0) {
+            console.error('No images in completed task:', checkData);
+            return NextResponse.json(
+              { success: false, error: 'No result image generated' },
+              { status: 500 }
+            );
+          }
+
+          // Get the first image URL and convert to base64
+          const imageUrl = imageList[0];
+          try {
+            const imageResponse = await fetch(imageUrl);
+            const imageArrayBuffer = await imageResponse.arrayBuffer();
+            const base64 = Buffer.from(imageArrayBuffer).toString('base64');
+            const transformedImage = `data:image/jpeg;base64,${base64}`;
+
+            console.log('Hairstyle transformation completed successfully');
+            return NextResponse.json({
+              success: true,
+              transformedImage,
+            });
+          } catch (fetchError) {
+            console.error('Error fetching result image:', fetchError);
+            return NextResponse.json(
+              { success: false, error: 'Failed to fetch transformed image' },
+              { status: 500 }
+            );
+          }
+        } else if (taskStatus === 3) {
+          // Task failed
+          console.error('Hairstyle task failed:', checkData);
+          return NextResponse.json(
+            { success: false, error: 'Hairstyle transformation failed' },
+            { status: 500 }
+          );
+        }
+        // taskStatus === 1 means still processing, continue polling
+      }
+
+      // Timeout after max attempts
+      console.error('Hairstyle transformation timeout');
+      return NextResponse.json(
+        { success: false, error: 'Hairstyle transformation timeout' },
+        { status: 408 }
       );
     }
 

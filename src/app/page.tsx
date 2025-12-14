@@ -128,6 +128,13 @@ export default function HomePage() {
       gradient: 'from-pink-500 to-purple-500',
     },
     {
+      icon: '✂️',
+      title: 'Hairstyle Changer',
+      description: 'Try different hairstyles and colors',
+      status: 'Available',
+      gradient: 'from-purple-500 to-pink-500',
+    },
+    {
       icon: '🎨',
       title: 'Artistic Filters',
       description: 'Transform into art styles',

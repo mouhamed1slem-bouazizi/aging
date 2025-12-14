@@ -72,6 +72,13 @@ const TRANSFORMATION_TYPES = [
     icon: '✨',
     gradient: 'from-pink-500 to-purple-500',
   },
+  {
+    id: 'hairstyle' as TransformationType,
+    label: 'Hairstyle Changer',
+    description: 'Try different hairstyles and colors',
+    icon: '✂️',
+    gradient: 'from-purple-500 to-pink-500',
+  },
 ];
 
 export default function TransformationTypeSelector({
