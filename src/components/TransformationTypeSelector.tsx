@@ -58,6 +58,13 @@ const TRANSFORMATION_TYPES = [
     icon: '🌸',
     gradient: 'from-pink-500 to-rose-500',
   },
+  {
+    id: 'face-fusion' as TransformationType,
+    label: 'Merge Portraits',
+    description: 'Blend faces with template',
+    icon: '🎭',
+    gradient: 'from-purple-500 to-pink-500',
+  },
 ];
 
 export default function TransformationTypeSelector({
@@ -75,7 +82,7 @@ export default function TransformationTypeSelector({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-8 gap-6">
         {TRANSFORMATION_TYPES.map((type, index) => (
           <motion.button
             key={type.id}

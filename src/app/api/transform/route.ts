@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AGE_CATEGORIES, AILAB_API_URL, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams } from '@/types';
 
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest): Promise<NextResponse<TransformResponse>> {
   try {
     const body = await request.json();
-    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty } = body as { 
+    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion } = body as { 
       image: string; 
       transformationType: TransformationType;
       ageCategory?: AgeCategory;
@@ -18,6 +18,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       faceBeauty?: FaceBeautyParams;
       faceSlimming?: FaceSlimmingParams;
       skinBeauty?: SkinBeautyParams;
+      faceFusion?: FaceFusionParams;
     };
 
     // Validate inputs
@@ -166,6 +167,19 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       // Skin beauty uses different endpoint
       apiUrl = 'https://www.ailabapi.com/api/portrait/effects/smart-skin';
       console.log(`Applying skin beauty: retouch=${skinBeauty.retouchDegree}, whitening=${skinBeauty.whiteningDegree}`);
+    }
+    // Handle face fusion transformation
+    else if (transformationType === 'face-fusion') {
+      if (!faceFusion || !faceFusion.templateImage) {
+        return NextResponse.json(
+          { success: false, error: 'No template image provided for face fusion' },
+          { status: 400 }
+        );
+      }
+
+      // Face fusion uses different endpoint
+      apiUrl = 'https://www.ailabapi.com/api/portrait/effects/face-fusion';
+      console.log(`Applying face fusion: similarity=${faceFusion.sourceSimilarity}`);
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -184,7 +198,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
     // Create FormData for the API request
     const formData = new FormData();
     const blob = new Blob([imageBuffer], { type: mimeType });
-    formData.append('image', blob, `photo.${extension}`);
+    // Face fusion uses 'image_target' field name, others use 'image'
+    const imageFieldName = transformationType === 'face-fusion' ? 'image_target' : 'image';
+    formData.append(imageFieldName, blob, `photo.${extension}`);
     
     // Add parameters based on transformation type
     if (transformationType === 'filter') {
@@ -213,6 +229,17 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       // Skin beauty API requires retouch_degree and whitening_degree parameters
       formData.append('retouch_degree', skinBeauty!.retouchDegree.toString());
       formData.append('whitening_degree', skinBeauty!.whiteningDegree.toString());
+    } else if (transformationType === 'face-fusion') {
+      // Face fusion API requires image_target, image_template, and source_similarity
+      // Extract base64 data from template image
+      const templateBase64 = faceFusion!.templateImage.replace(/^data:image\/\w+;base64,/, '');
+      const templateBuffer = Buffer.from(templateBase64, 'base64');
+      const templateBlob = new Blob([templateBuffer], { type: 'image/jpeg' });
+      
+      // Add template image as image_template
+      formData.append('image_template', templateBlob, 'template.jpg');
+      // Target image is the user's photo
+      formData.append('source_similarity', faceFusion!.sourceSimilarity.toString());
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -320,6 +347,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
           { status: 500 }
         );
       }
+    } else if (transformationType === 'face-fusion' && data.data?.image) {
+      const resultImage = data.data.image;
+      // Face fusion returns base64 without prefix, add it
+      transformedImage = resultImage.startsWith('data:') 
+        ? resultImage 
+        : `data:image/jpeg;base64,${resultImage}`;
     } else if (data.result?.image) {
       const resultImage = data.result.image;
       // The API returns base64 without prefix, add it

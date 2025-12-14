@@ -114,6 +114,13 @@ export default function HomePage() {
       gradient: 'from-pink-500 to-rose-500',
     },
     {
+      icon: '🎭',
+      title: 'Merge Portraits',
+      description: 'Blend faces with template',
+      status: 'Available',
+      gradient: 'from-purple-500 to-pink-500',
+    },
+    {
       icon: '🎨',
       title: 'Artistic Filters',
       description: 'Transform into art styles',
