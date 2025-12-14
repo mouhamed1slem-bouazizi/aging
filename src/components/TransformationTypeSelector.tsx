@@ -65,6 +65,13 @@ const TRANSFORMATION_TYPES = [
     icon: '🎭',
     gradient: 'from-purple-500 to-pink-500',
   },
+  {
+    id: 'smart-beauty' as TransformationType,
+    label: 'Smart Beauty',
+    description: 'AI-powered beauty enhancement',
+    icon: '✨',
+    gradient: 'from-pink-500 to-purple-500',
+  },
 ];
 
 export default function TransformationTypeSelector({

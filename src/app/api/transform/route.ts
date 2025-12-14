@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AGE_CATEGORIES, AILAB_API_URL, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams } from '@/types';
 
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest): Promise<NextResponse<TransformResponse>> {
   try {
     const body = await request.json();
-    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion } = body as { 
+    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty } = body as { 
       image: string; 
       transformationType: TransformationType;
       ageCategory?: AgeCategory;
@@ -19,6 +19,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       faceSlimming?: FaceSlimmingParams;
       skinBeauty?: SkinBeautyParams;
       faceFusion?: FaceFusionParams;
+      smartBeauty?: SmartBeautyParams;
     };
 
     // Validate inputs
@@ -180,6 +181,19 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       // Face fusion uses different endpoint
       apiUrl = 'https://www.ailabapi.com/api/portrait/effects/face-fusion';
       console.log(`Applying face fusion: similarity=${faceFusion.sourceSimilarity}`);
+    }
+    // Handle smart beauty transformation
+    else if (transformationType === 'smart-beauty') {
+      if (!smartBeauty) {
+        return NextResponse.json(
+          { success: false, error: 'No smart beauty parameters provided' },
+          { status: 400 }
+        );
+      }
+
+      // Smart beauty uses different endpoint
+      apiUrl = 'https://www.ailabapi.com/api/portrait/effects/smart-beauty';
+      console.log(`Applying smart beauty: level=${smartBeauty.beautyLevel}, multiFace=${smartBeauty.multiFace}`);
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -198,8 +212,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
     // Create FormData for the API request
     const formData = new FormData();
     const blob = new Blob([imageBuffer], { type: mimeType });
-    // Face fusion uses 'image_target' field name, others use 'image'
-    const imageFieldName = transformationType === 'face-fusion' ? 'image_target' : 'image';
+    // Face fusion and smart beauty use 'image_target' field name, others use 'image'
+    const imageFieldName = (transformationType === 'face-fusion' || transformationType === 'smart-beauty') ? 'image_target' : 'image';
     formData.append(imageFieldName, blob, `photo.${extension}`);
     
     // Add parameters based on transformation type
@@ -240,6 +254,11 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       formData.append('image_template', templateBlob, 'template.jpg');
       // Target image is the user's photo
       formData.append('source_similarity', faceFusion!.sourceSimilarity.toString());
+    } else if (transformationType === 'smart-beauty') {
+      // Smart beauty API requires beauty_level, multi_face, and task_type
+      formData.append('beauty_level', smartBeauty!.beautyLevel.toString());
+      formData.append('multi_face', smartBeauty!.multiFace ? '1' : '0');
+      formData.append('task_type', 'sync');
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -350,6 +369,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
     } else if (transformationType === 'face-fusion' && data.data?.image) {
       const resultImage = data.data.image;
       // Face fusion returns base64 without prefix, add it
+      transformedImage = resultImage.startsWith('data:') 
+        ? resultImage 
+        : `data:image/jpeg;base64,${resultImage}`;
+    } else if (transformationType === 'smart-beauty' && data.data?.image) {
+      const resultImage = data.data.image;
+      // Smart beauty returns base64 without prefix, add it
       transformedImage = resultImage.startsWith('data:') 
         ? resultImage 
         : `data:image/jpeg;base64,${resultImage}`;

@@ -121,6 +121,13 @@ export default function HomePage() {
       gradient: 'from-purple-500 to-pink-500',
     },
     {
+      icon: '✨',
+      title: 'Smart Beauty',
+      description: 'AI-powered beauty enhancement',
+      status: 'Available',
+      gradient: 'from-pink-500 to-purple-500',
+    },
+    {
       icon: '🎨',
       title: 'Artistic Filters',
       description: 'Transform into art styles',

@@ -13,6 +13,7 @@ export { default as FaceBeautySelector } from './FaceBeautySelector';
 export { default as FaceSlimmingSelector } from './FaceSlimmingSelector';
 export { default as SkinBeautySelector } from './SkinBeautySelector';
 export { default as FaceFusionSelector } from './FaceFusionSelector';
+export { default as SmartBeautySelector } from './SmartBeautySelector';
 export { default as TransformationTypeSelector } from './TransformationTypeSelector';
 export { default as LoadingAnimation } from './LoadingAnimation';
 export { default as ImageComparison } from './ImageComparison';

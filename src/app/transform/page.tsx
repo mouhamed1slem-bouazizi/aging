@@ -14,6 +14,7 @@ import {
   FaceSlimmingSelector,
   SkinBeautySelector,
   FaceFusionSelector,
+  SmartBeautySelector,
   TransformationTypeSelector,
   LoadingAnimation,
   ImageComparison,
@@ -21,11 +22,11 @@ import {
   ErrorDisplay,
   ProtectedRoute,
 } from '@/components';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams } from '@/types';
 import { AGE_CATEGORIES, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
 import { compressImage } from '@/lib/utils';
 
-type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'select-fusion' | 'processing' | 'result' | 'error';
+type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'select-fusion' | 'select-smart-beauty' | 'processing' | 'result' | 'error';
 
 export default function TransformPage() {
   const [step, setStep] = useState<Step>('select-type');
@@ -42,6 +43,7 @@ export default function TransformPage() {
   const [selectedSlimming, setSelectedSlimming] = useState<FaceSlimmingParams | null>(null);
   const [selectedSkin, setSelectedSkin] = useState<SkinBeautyParams | null>(null);
   const [selectedFusion, setSelectedFusion] = useState<FaceFusionParams | null>(null);
+  const [selectedSmartBeauty, setSelectedSmartBeauty] = useState<SmartBeautyParams | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleImageSelect = useCallback(async (imageSrc: string) => {
@@ -68,6 +70,8 @@ export default function TransformPage() {
         setStep('select-skin');
       } else if (transformationType === 'face-fusion') {
         setStep('select-fusion');
+      } else if (transformationType === 'smart-beauty') {
+        setStep('select-smart-beauty');
       }
     } catch (err) {
       console.error('Image compression error:', err);
@@ -389,6 +393,46 @@ export default function TransformPage() {
     }
   }, [originalImage]);
 
+  const handleSmartBeautySelect = useCallback(async (smartBeautyParams: SmartBeautyParams) => {
+    setSelectedSmartBeauty(smartBeautyParams);
+    
+    if (!originalImage) {
+      setError('No image selected');
+      setStep('error');
+      return;
+    }
+
+    setStep('processing');
+    setError(null);
+
+    try {
+      const response = await fetch('/api/transform', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image: originalImage,
+          transformationType: 'smart-beauty',
+          smartBeauty: smartBeautyParams,
+        }),
+      });
+
+      const data: TransformResponse = await response.json();
+
+      if (!data.success || !data.transformedImage) {
+        throw new Error(data.error || 'Transformation failed');
+      }
+
+      setTransformedImage(data.transformedImage);
+      setStep('result');
+    } catch (err) {
+      console.error('Transform error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to transform image');
+      setStep('error');
+    }
+  }, [originalImage]);
+
   const handleStartOver = useCallback(() => {
     setOriginalImage(null);
     setTransformedImage(null);
@@ -402,6 +446,7 @@ export default function TransformPage() {
     setSelectedSlimming(null);
     setSelectedSkin(null);
     setSelectedFusion(null);
+    setSelectedSmartBeauty(null);
     setError(null);
     setStep('select-type');
   }, []);
@@ -417,6 +462,7 @@ export default function TransformPage() {
     setSelectedSlimming(null);
     setSelectedSkin(null);
     setSelectedFusion(null);
+    setSelectedSmartBeauty(null);
     setError(null);
     setStep('select-type');
   }, []);
@@ -425,7 +471,7 @@ export default function TransformPage() {
     if (step === 'upload') {
       setStep('select-type');
       setOriginalImage(null);
-    } else if (step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color' || step === 'select-beauty' || step === 'select-slimming' || step === 'select-skin' || step === 'select-fusion') {
+    } else if (step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color' || step === 'select-beauty' || step === 'select-slimming' || step === 'select-skin' || step === 'select-fusion' || step === 'select-smart-beauty') {
       setStep('upload');
       setSelectedAge(null);
       setSelectedGender(null);
@@ -435,6 +481,7 @@ export default function TransformPage() {
       setSelectedSlimming(null);
       setSelectedSkin(null);
       setSelectedFusion(null);
+      setSelectedSmartBeauty(null);
     } else if (step === 'error') {
       if (transformationType) {
         if (transformationType === 'age') {
@@ -453,6 +500,8 @@ export default function TransformPage() {
           setStep('select-skin');
         } else if (transformationType === 'face-fusion') {
           setStep('select-fusion');
+        } else if (transformationType === 'smart-beauty') {
+          setStep('select-smart-beauty');
         }
       } else if (originalImage) {
         setStep('upload');
@@ -479,10 +528,12 @@ export default function TransformPage() {
       handleSkinSelect(selectedSkin);
     } else if (transformationType === 'face-fusion' && selectedFusion && originalImage) {
       handleFusionSelect(selectedFusion);
+    } else if (transformationType === 'smart-beauty' && selectedSmartBeauty && originalImage) {
+      handleSmartBeautySelect(selectedSmartBeauty);
     } else {
       handleGoBack();
     }
-  }, [transformationType, selectedAge, selectedGender, selectedFilter, filterStrength, selectedLipColor, selectedBeauty, selectedSlimming, selectedSkin, selectedFusion, originalImage, handleAgeSelect, handleGenderSelect, handleFilterSelect, handleLipColorSelect, handleBeautySelect, handleSlimmingSelect, handleSkinSelect, handleFusionSelect, handleGoBack]);
+  }, [transformationType, selectedAge, selectedGender, selectedFilter, filterStrength, selectedLipColor, selectedBeauty, selectedSlimming, selectedSkin, selectedFusion, selectedSmartBeauty, originalImage, handleAgeSelect, handleGenderSelect, handleFilterSelect, handleLipColorSelect, handleBeautySelect, handleSlimmingSelect, handleSkinSelect, handleFusionSelect, handleSmartBeautySelect, handleGoBack]);
 
   const getStepTitle = () => {
     switch (step) {
@@ -506,6 +557,8 @@ export default function TransformPage() {
         return 'Skin Beauty Enhancement';
       case 'select-fusion':
         return 'Merge Portraits';
+      case 'select-smart-beauty':
+        return 'Smart Beauty';
       case 'processing':
         return 'Processing';
       case 'result':
@@ -528,6 +581,8 @@ export default function TransformPage() {
           return 'Your Beautiful Skin';
         } else if (transformationType === 'face-fusion') {
           return 'Your Merged Portrait';
+        } else if (transformationType === 'smart-beauty') {
+          return 'Your Smart Beauty Result';
         }
         return 'Your Transformation';
       case 'error':
@@ -555,6 +610,8 @@ export default function TransformPage() {
       return 'Skin Beauty';
     } else if (transformationType === 'face-fusion') {
       return 'Merged Portrait';
+    } else if (transformationType === 'smart-beauty') {
+      return 'Smart Beauty';
     }
     return 'Transformed';
   };
@@ -566,7 +623,7 @@ export default function TransformPage() {
       <div className="sticky top-16 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            {(step === 'upload' || step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color' || step === 'select-beauty' || step === 'select-slimming' || step === 'select-skin' || step === 'select-fusion' || step === 'error') && (
+            {(step === 'upload' || step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color' || step === 'select-beauty' || step === 'select-slimming' || step === 'select-skin' || step === 'select-fusion' || step === 'select-smart-beauty' || step === 'error') && (
               <button
                 onClick={handleGoBack}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -588,6 +645,7 @@ export default function TransformPage() {
                   {step === 'select-slimming' && 'Adjust face slimming intensity'}
                   {step === 'select-skin' && 'Adjust skin smoothing and whitening'}
                   {step === 'select-fusion' && 'Upload template and adjust similarity'}
+                  {step === 'select-smart-beauty' && 'Adjust AI beauty enhancement'}
                   {step === 'result' && 'Your transformation is ready!'}
                 </p>
               )}
@@ -740,8 +798,20 @@ export default function TransformPage() {
             </motion.div>
           )}
 
+          {/* Smart Beauty Selection Step */}
+          {step === 'select-smart-beauty' && originalImage && (
+            <motion.div
+              key="select-smart-beauty"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+            >
+              <SmartBeautySelector onBeautySelect={handleSmartBeautySelect} />
+            </motion.div>
+          )}
+
           {/* Processing Step */}
-          {step === 'processing' && (selectedAge || selectedGender || selectedFilter || selectedLipColor || selectedBeauty || selectedSlimming || selectedSkin || selectedFusion) && (
+          {step === 'processing' && (selectedAge || selectedGender || selectedFilter || selectedLipColor || selectedBeauty || selectedSlimming || selectedSkin || selectedFusion || selectedSmartBeauty) && (
             <motion.div
               key="processing"
               initial={{ opacity: 0, scale: 0.95 }}

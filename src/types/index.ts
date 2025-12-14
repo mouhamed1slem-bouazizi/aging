@@ -24,7 +24,7 @@ export type FaceFilterType =
   | 'nostalgia' | 'cheese' | 'butterfly';
 
 // Transformation type
-export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion';
+export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty';
 
 export interface AgeCategoryOption {
   id: AgeCategory;
@@ -83,6 +83,12 @@ export interface FaceFusionParams {
   sourceSimilarity: number; // 0-1 Similarity control
 }
 
+// Smart beauty parameters
+export interface SmartBeautyParams {
+  beautyLevel: number;  // 0-1 Beauty enhancement level
+  multiFace: boolean;   // Process all faces or just largest
+}
+
 export interface FaceFilterOption {
   id: FaceFilterType;
   label: string;
@@ -105,6 +111,7 @@ export interface TransformRequest {
   faceSlimming?: FaceSlimmingParams; // Face slimming parameters
   skinBeauty?: SkinBeautyParams; // Skin beauty parameters
   faceFusion?: FaceFusionParams; // Face fusion parameters
+  smartBeauty?: SmartBeautyParams; // Smart beauty parameters
 }
 
 export interface TransformResponse {
@@ -120,7 +127,7 @@ export interface ImageState {
 }
 
 export interface AppState {
-  step: 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'select-fusion' | 'processing' | 'result' | 'error';
+  step: 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'select-fusion' | 'select-smart-beauty' | 'processing' | 'result' | 'error';
   image: ImageState;
   transformationType: TransformationType | null;
   selectedAge: AgeCategory | null;
@@ -132,6 +139,7 @@ export interface AppState {
   selectedSlimming: FaceSlimmingParams | null;
   selectedSkin: SkinBeautyParams | null;
   selectedFusion: FaceFusionParams | null;
+  selectedSmartBeauty: SmartBeautyParams | null;
   isLoading: boolean;
   error: string | null;
 }
