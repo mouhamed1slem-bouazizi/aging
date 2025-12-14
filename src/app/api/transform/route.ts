@@ -353,13 +353,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
         attempts++;
         await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
 
-        const checkResponse = await fetch(checkUrl, {
-          method: 'POST',
+        // Use GET method with task_id as query parameter
+        const checkResponse = await fetch(`${checkUrl}?task_id=${encodeURIComponent(taskId)}`, {
+          method: 'GET',
           headers: {
             'ailabapi-api-key': ailabApiKey,
-            'Content-Type': 'application/x-www-form-urlencoded',
           },
-          body: `task_id=${taskId}`,
         });
 
         if (!checkResponse.ok) {
@@ -368,7 +367,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
         }
 
         const checkData = await checkResponse.json();
-        console.log(`Task check attempt ${attempts}:`, checkData.data?.task_status);
+        console.log(`Task check attempt ${attempts}:`, checkData.task_status);
 
         if (checkData.error_code !== 0) {
           console.error('Task check returned error:', checkData);
@@ -378,11 +377,11 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
           );
         }
 
-        const taskStatus = checkData.data?.task_status;
+        const taskStatus = checkData.task_status;
 
         if (taskStatus === 2) {
-          // Task completed successfully
-          const imageList = checkData.data?.image_list;
+          // Task completed successfully (status 2)
+          const imageList = checkData.image_list;
           if (!imageList || imageList.length === 0) {
             console.error('No images in completed task:', checkData);
             return NextResponse.json(
@@ -412,14 +411,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
             );
           }
         } else if (taskStatus === 3) {
-          // Task failed
+          // Task failed (if status 3 exists, though docs show 0,1,2)
           console.error('Hairstyle task failed:', checkData);
           return NextResponse.json(
             { success: false, error: 'Hairstyle transformation failed' },
             { status: 500 }
           );
         }
-        // taskStatus === 1 means still processing, continue polling
+        // taskStatus === 0 (queued) or 1 (processing) means still processing, continue polling
       }
 
       // Timeout after max attempts
