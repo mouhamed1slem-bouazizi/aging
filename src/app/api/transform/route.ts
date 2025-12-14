@@ -381,7 +381,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
 
         if (taskStatus === 2) {
           // Task completed successfully (status 2)
-          const imageList = checkData.image_list;
+          // Image URLs are in data.images (plural), not image_list
+          const imageList = checkData.data?.images || checkData.image_list;
           if (!imageList || imageList.length === 0) {
             console.error('No images in completed task:', checkData);
             return NextResponse.json(
