@@ -332,7 +332,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
 
     // Handle async hairstyle transformation
     if (transformationType === 'hairstyle') {
-      const taskId = data.data?.task_id;
+      // For async tasks, task_id is at root level, not in data.task_id
+      const taskId = data.task_id;
       if (!taskId) {
         console.error('No task_id in hairstyle response:', JSON.stringify(data, null, 2));
         return NextResponse.json(
