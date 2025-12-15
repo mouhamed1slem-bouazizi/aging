@@ -1082,7 +1082,7 @@ export default function TransformPage() {
           )}
 
           {/* Processing Step */}
-          {step === 'processing' && (selectedAge || selectedGender || selectedFilter || selectedLipColor || selectedBeauty || selectedSlimming || selectedSkin || selectedFusion || selectedSmartBeauty || selectedHairstyle || selectedExpression || selectedCartoon) && (
+          {step === 'processing' && (selectedAge || selectedGender || selectedFilter || selectedLipColor || selectedBeauty || selectedSlimming || selectedSkin || selectedFusion || selectedSmartBeauty || selectedHairstyle || selectedExpression || selectedCartoon || transformationType === 'image-enhance' || transformationType === 'image-dehaze' || transformationType === 'photo-colorize') && (
             <motion.div
               key="processing"
               initial={{ opacity: 0, scale: 0.95 }}
