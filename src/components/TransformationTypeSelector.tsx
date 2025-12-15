@@ -156,6 +156,13 @@ const TRANSFORMATION_TYPES = [
     icon: '🔍',
     gradient: 'from-emerald-500 to-teal-500',
   },
+  {
+    id: 'photo-painting' as TransformationType,
+    label: 'Photo to Painting',
+    description: 'Convert photos to artistic paintings',
+    icon: '🖼️',
+    gradient: 'from-amber-500 to-orange-500',
+  },
 ];
 
 export default function TransformationTypeSelector({

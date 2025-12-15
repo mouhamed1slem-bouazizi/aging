@@ -212,6 +212,13 @@ export default function HomePage() {
       gradient: 'from-emerald-500 to-teal-500',
     },
     {
+      icon: '🖼️',
+      title: 'Photo to Painting',
+      description: 'Transform photos into artistic paintings',
+      status: 'Available',
+      gradient: 'from-amber-500 to-orange-500',
+    },
+    {
       icon: '🎨',
       title: 'Artistic Filters',
       description: 'Transform into art styles',

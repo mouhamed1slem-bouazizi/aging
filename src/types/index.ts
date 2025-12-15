@@ -24,7 +24,7 @@ export type FaceFilterType =
   | 'nostalgia' | 'cheese' | 'butterfly';
 
 // Transformation type
-export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle' | 'expression' | 'cartoon' | 'image-enhance' | 'image-dehaze' | 'photo-colorize' | 'image-sharpen' | 'image-restore' | 'photo-retouch' | 'image-crop' | 'style-transfer' | 'image-upscale';
+export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle' | 'expression' | 'cartoon' | 'image-enhance' | 'image-dehaze' | 'photo-colorize' | 'image-sharpen' | 'image-restore' | 'photo-retouch' | 'image-crop' | 'style-transfer' | 'image-upscale' | 'photo-painting';
 
 export interface AgeCategoryOption {
   id: AgeCategory;
@@ -131,6 +131,9 @@ export interface UpscaleParams {
   outputFormat: OutputFormat;     // png, jpg, or bmp
   outputQuality: number;          // 30-100 (only for jpg)
 }
+
+// Painting style parameters
+export type PaintingStyle = 'cartoon' | 'pencil' | 'color_pencil' | 'warm' | 'wave' | 'lavender' | 'mononoke' | 'scream' | 'gothic';
 
 export interface FaceFilterOption {
   id: FaceFilterType;

@@ -20,6 +20,7 @@ export { default as CartoonSelector } from './CartoonSelector';
 export { default as StyleImageSelector } from './StyleImageSelector';
 export { default as CropDimensionsSelector } from './CropDimensionsSelector';
 export { default as UpscaleParamsSelector } from './UpscaleParamsSelector';
+export { default as PaintingStyleSelector } from './PaintingStyleSelector';
 export { default as TransformationTypeSelector } from './TransformationTypeSelector';
 export { default as LoadingAnimation } from './LoadingAnimation';
 export { default as ImageComparison } from './ImageComparison';

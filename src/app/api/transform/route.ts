@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AGE_CATEGORIES, AILAB_API_URL, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams, PaintingStyle } from '@/types';
 
 export const maxDuration = 300; // Increased for async operations
 
 export async function POST(request: NextRequest): Promise<NextResponse<TransformResponse>> {
   try {
     const body = await request.json();
-    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression, cartoon, styleImage, crop, upscale } = body as { 
+    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression, cartoon, styleImage, crop, upscale, paintingStyle } = body as { 
       image: string; 
       transformationType: TransformationType;
       ageCategory?: AgeCategory;
@@ -26,6 +26,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       styleImage?: string; // For photo retouch
       crop?: CropParams; // For image crop
       upscale?: UpscaleParams; // For image upscale
+      paintingStyle?: PaintingStyle; // For photo to painting
     };
 
     // Validate inputs
@@ -297,6 +298,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       }
       apiUrl = 'https://www.ailabapi.com/api/image/enhance/image-lossless-enlargement';
       console.log(`Upscaling image ${upscale.upscaleFactor}x in ${upscale.mode} mode`);
+    } else if (transformationType === 'photo-painting') {
+      // Photo to painting endpoint - requires painting style
+      if (!paintingStyle) {
+        return NextResponse.json(
+          { success: false, error: 'No painting style provided' },
+          { status: 400 }
+        );
+      }
+      apiUrl = 'https://www.ailabapi.com/api/image/effects/image-style-conversion';
+      console.log(`Converting to ${paintingStyle} painting style`);
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -416,6 +427,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       if (upscale!.outputFormat === 'jpg') {
         formData.append('output_quality', upscale!.outputQuality.toString());
       }
+    } else if (transformationType === 'photo-painting') {
+      // Photo to painting requires painting style option
+      formData.append('option', paintingStyle!);
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -696,6 +710,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
         : `data:image/jpeg;base64,${resultImage}`;
     } else if (transformationType === 'image-restore' && data.image) {
       // Image restore returns base64 in 'image' field at root level
+      const resultImage = data.image;
+      transformedImage = resultImage.startsWith('data:') 
+        ? resultImage 
+        : `data:image/jpeg;base64,${resultImage}`;
+    } else if (transformationType === 'photo-painting' && data.image) {
+      // Photo to painting returns base64 in 'image' field at root level
       const resultImage = data.image;
       transformedImage = resultImage.startsWith('data:') 
         ? resultImage 
