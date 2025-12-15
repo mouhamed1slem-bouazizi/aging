@@ -121,6 +121,13 @@ const TRANSFORMATION_TYPES = [
     icon: '🔍',
     gradient: 'from-orange-500 to-red-500',
   },
+  {
+    id: 'image-restore' as TransformationType,
+    label: 'Image Restore',
+    description: 'Fix stretched and distorted images',
+    icon: '🔄',
+    gradient: 'from-teal-500 to-green-500',
+  },
 ];
 
 export default function TransformationTypeSelector({

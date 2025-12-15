@@ -250,6 +250,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       // Image sharpen endpoint - no parameters needed
       apiUrl = 'https://www.ailabapi.com/api/image/enhance/image-sharpness-enhancement';
       console.log('Sharpening image');
+    } else if (transformationType === 'image-restore') {
+      // Image restore endpoint - no parameters needed
+      apiUrl = 'https://www.ailabapi.com/api/image/enhance/stretch-image-recovery';
+      console.log('Restoring stretched image');
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -338,6 +342,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       // Photo colorize doesn't need any parameters, just the image
     } else if (transformationType === 'image-sharpen') {
       // Image sharpen doesn't need any parameters, just the image
+    } else if (transformationType === 'image-restore') {
+      // Image restore doesn't need any parameters, just the image
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -612,6 +618,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
         : `data:image/jpeg;base64,${resultImage}`;
     } else if (transformationType === 'image-sharpen' && data.image) {
       // Image sharpen returns base64 in 'image' field at root level
+      const resultImage = data.image;
+      transformedImage = resultImage.startsWith('data:') 
+        ? resultImage 
+        : `data:image/jpeg;base64,${resultImage}`;
+    } else if (transformationType === 'image-restore' && data.image) {
+      // Image restore returns base64 in 'image' field at root level
       const resultImage = data.image;
       transformedImage = resultImage.startsWith('data:') 
         ? resultImage 

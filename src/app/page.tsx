@@ -177,6 +177,13 @@ export default function HomePage() {
       gradient: 'from-orange-500 to-red-500',
     },
     {
+      icon: '🔄',
+      title: 'Image Restore',
+      description: 'Fix stretched and distorted images',
+      status: 'Available',
+      gradient: 'from-teal-500 to-green-500',
+    },
+    {
       icon: '🎨',
       title: 'Artistic Filters',
       description: 'Transform into art styles',
