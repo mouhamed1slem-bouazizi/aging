@@ -135,6 +135,13 @@ const TRANSFORMATION_TYPES = [
     icon: '🎭',
     gradient: 'from-violet-500 to-purple-500',
   },
+  {
+    id: 'image-crop' as TransformationType,
+    label: 'AI Image Crop',
+    description: 'Smart crop with custom dimensions',
+    icon: '✂️',
+    gradient: 'from-blue-500 to-cyan-500',
+  },
 ];
 
 export default function TransformationTypeSelector({

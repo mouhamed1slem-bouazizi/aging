@@ -18,6 +18,7 @@ export { default as HairstyleSelector } from './HairstyleSelector';
 export { default as ExpressionSelector } from './ExpressionSelector';
 export { default as CartoonSelector } from './CartoonSelector';
 export { default as StyleImageSelector } from './StyleImageSelector';
+export { default as CropDimensionsSelector } from './CropDimensionsSelector';
 export { default as TransformationTypeSelector } from './TransformationTypeSelector';
 export { default as LoadingAnimation } from './LoadingAnimation';
 export { default as ImageComparison } from './ImageComparison';

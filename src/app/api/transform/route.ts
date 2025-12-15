@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AGE_CATEGORIES, AILAB_API_URL, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams } from '@/types';
 
 export const maxDuration = 300; // Increased for async operations
 
 export async function POST(request: NextRequest): Promise<NextResponse<TransformResponse>> {
   try {
     const body = await request.json();
-    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression, cartoon, styleImage } = body as { 
+    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression, cartoon, styleImage, crop } = body as { 
       image: string; 
       transformationType: TransformationType;
       ageCategory?: AgeCategory;
@@ -24,6 +24,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       expression?: ExpressionParams;
       cartoon?: CartoonParams;
       styleImage?: string; // For photo retouch
+      crop?: CropParams; // For image crop
     };
 
     // Validate inputs
@@ -265,6 +266,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       }
       apiUrl = 'https://www.ailabapi.com/api/image/editing/photo-retouching';
       console.log('Applying photo retouch with style transfer');
+    } else if (transformationType === 'image-crop') {
+      // Image crop endpoint - requires width and height
+      if (!crop) {
+        return NextResponse.json(
+          { success: false, error: 'No crop dimensions provided' },
+          { status: 400 }
+        );
+      }
+      apiUrl = 'https://www.ailabapi.com/api/image/editing/image-cropping';
+      console.log(`Cropping image to ${crop.width}x${crop.height}`);
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -361,6 +372,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       const styleBuffer = Buffer.from(styleBase64, 'base64');
       const styleBlob = new Blob([styleBuffer], { type: 'image/jpeg' });
       formData.append('style', styleBlob, 'style.jpg');
+    } else if (transformationType === 'image-crop') {
+      // Image crop requires width and height
+      formData.append('width', crop!.width.toString());
+      formData.append('height', crop!.height.toString());
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -661,6 +676,24 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
         transformedImage = `data:image/jpeg;base64,${base64Image}`;
       } catch (downloadError) {
         console.error('Error downloading retouched image:', downloadError);
+        throw new Error('Failed to download transformed image');
+      }
+    } else if (transformationType === 'image-crop' && data.data?.url) {
+      // Image crop returns url - need to download it
+      const imageUrl = data.data.url;
+      console.log(`Downloading cropped image from: ${imageUrl}`);
+      
+      try {
+        const imageResponse = await fetch(imageUrl);
+        if (!imageResponse.ok) {
+          throw new Error(`Failed to download image: ${imageResponse.status}`);
+        }
+        
+        const imageBuffer = await imageResponse.arrayBuffer();
+        const base64Image = Buffer.from(imageBuffer).toString('base64');
+        transformedImage = `data:image/jpeg;base64,${base64Image}`;
+      } catch (downloadError) {
+        console.error('Error downloading cropped image:', downloadError);
         throw new Error('Failed to download transformed image');
       }
     } else if (data.result?.image) {

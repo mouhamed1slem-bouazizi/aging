@@ -24,7 +24,7 @@ export type FaceFilterType =
   | 'nostalgia' | 'cheese' | 'butterfly';
 
 // Transformation type
-export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle' | 'expression' | 'cartoon' | 'image-enhance' | 'image-dehaze' | 'photo-colorize' | 'image-sharpen' | 'image-restore' | 'photo-retouch';
+export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle' | 'expression' | 'cartoon' | 'image-enhance' | 'image-dehaze' | 'photo-colorize' | 'image-sharpen' | 'image-restore' | 'photo-retouch' | 'image-crop';
 
 export interface AgeCategoryOption {
   id: AgeCategory;
@@ -112,6 +112,12 @@ export type CartoonType = 'jpcartoon' | 'anime' | 'claborate' | 'hongkong' | 'co
 
 export interface CartoonParams {
   cartoonType: CartoonType;
+}
+
+// Image crop parameters
+export interface CropParams {
+  width: number;  // Target width in pixels
+  height: number; // Target height in pixels
 }
 
 export interface FaceFilterOption {
