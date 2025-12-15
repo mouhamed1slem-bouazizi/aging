@@ -60,7 +60,7 @@ export default function TransformPage() {
       setShowCamera(false);
       
       // For image enhancement or dehaze, process immediately without selection step
-      if (transformationType === 'image-enhance' || transformationType === 'image-dehaze') {
+      if (transformationType === 'image-enhance' || transformationType === 'image-dehaze' || transformationType === 'photo-colorize') {
         setStep('processing');
         setError(null);
 
@@ -124,7 +124,7 @@ export default function TransformPage() {
       setShowCamera(false);
       
       // For image enhancement or dehaze, process immediately even with uncompressed image
-      if (transformationType === 'image-enhance' || transformationType === 'image-dehaze') {
+      if (transformationType === 'image-enhance' || transformationType === 'image-dehaze' || transformationType === 'photo-colorize') {
         setStep('processing');
         setError(null);
 

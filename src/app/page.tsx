@@ -164,6 +164,13 @@ export default function HomePage() {
     },
     {
       icon: '🎨',
+      title: 'Photo Colorize',
+      description: 'Add color to black and white photos',
+      status: 'Available',
+      gradient: 'from-pink-500 to-purple-500',
+    },
+    {
+      icon: '🎨',
       title: 'Artistic Filters',
       description: 'Transform into art styles',
       status: 'Coming Soon',

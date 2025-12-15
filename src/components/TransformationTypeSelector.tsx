@@ -107,6 +107,13 @@ const TRANSFORMATION_TYPES = [
     icon: '🌫️',
     gradient: 'from-cyan-500 to-blue-500',
   },
+  {
+    id: 'photo-colorize' as TransformationType,
+    label: 'Photo Colorize',
+    description: 'Add color to black and white photos',
+    icon: '🎨',
+    gradient: 'from-pink-500 to-purple-500',
+  },
 ];
 
 export default function TransformationTypeSelector({
