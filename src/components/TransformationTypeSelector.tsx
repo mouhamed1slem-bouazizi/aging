@@ -100,6 +100,13 @@ const TRANSFORMATION_TYPES = [
     icon: '✨',
     gradient: 'from-green-500 to-teal-500',
   },
+  {
+    id: 'image-dehaze' as TransformationType,
+    label: 'Image Dehaze',
+    description: 'Remove fog and haze from images',
+    icon: '🌫️',
+    gradient: 'from-cyan-500 to-blue-500',
+  },
 ];
 
 export default function TransformationTypeSelector({

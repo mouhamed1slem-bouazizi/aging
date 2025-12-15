@@ -238,6 +238,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       // Image enhancement endpoint - no parameters needed
       apiUrl = 'https://www.ailabapi.com/api/image/enhance/image-contrast-enhancement';
       console.log('Enhancing image contrast');
+    } else if (transformationType === 'image-dehaze') {
+      // Image dehaze endpoint - no parameters needed
+      apiUrl = 'https://www.ailabapi.com/api/image/enhance/image-defogging';
+      console.log('Removing haze from image');
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -320,6 +324,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       formData.append('type', cartoon!.cartoonType);
     } else if (transformationType === 'image-enhance') {
       // Image enhancement doesn't need any parameters, just the image
+    } else if (transformationType === 'image-dehaze') {
+      // Image dehaze doesn't need any parameters, just the image
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -576,6 +582,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       }
     } else if (transformationType === 'image-enhance' && data.image) {
       // Image enhancement returns base64 in 'image' field at root level
+      const resultImage = data.image;
+      transformedImage = resultImage.startsWith('data:') 
+        ? resultImage 
+        : `data:image/jpeg;base64,${resultImage}`;
+    } else if (transformationType === 'image-dehaze' && data.image) {
+      // Image dehaze returns base64 in 'image' field at root level
       const resultImage = data.image;
       transformedImage = resultImage.startsWith('data:') 
         ? resultImage 

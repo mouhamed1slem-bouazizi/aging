@@ -156,6 +156,13 @@ export default function HomePage() {
       gradient: 'from-green-500 to-teal-500',
     },
     {
+      icon: '🌫️',
+      title: 'Image Dehaze',
+      description: 'Remove fog and haze from images',
+      status: 'Available',
+      gradient: 'from-cyan-500 to-blue-500',
+    },
+    {
       icon: '🎨',
       title: 'Artistic Filters',
       description: 'Transform into art styles',

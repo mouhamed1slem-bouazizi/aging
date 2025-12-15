@@ -59,8 +59,8 @@ export default function TransformPage() {
       setOriginalImage(compressed);
       setShowCamera(false);
       
-      // For image enhancement, process immediately without selection step
-      if (transformationType === 'image-enhance') {
+      // For image enhancement or dehaze, process immediately without selection step
+      if (transformationType === 'image-enhance' || transformationType === 'image-dehaze') {
         setStep('processing');
         setError(null);
 
@@ -72,21 +72,21 @@ export default function TransformPage() {
             },
             body: JSON.stringify({
               image: compressed,
-              transformationType: 'image-enhance',
+              transformationType: transformationType,
             }),
           });
 
           const data: TransformResponse = await response.json();
 
           if (!data.success || !data.transformedImage) {
-            throw new Error(data.error || 'Enhancement failed');
+            throw new Error(data.error || 'Processing failed');
           }
 
           setTransformedImage(data.transformedImage);
           setStep('result');
         } catch (err) {
-          console.error('Enhancement error:', err);
-          setError(err instanceof Error ? err.message : 'Failed to enhance image');
+          console.error('Processing error:', err);
+          setError(err instanceof Error ? err.message : 'Failed to process image');
           setStep('error');
         }
         return;
@@ -123,8 +123,8 @@ export default function TransformPage() {
       setOriginalImage(imageSrc);
       setShowCamera(false);
       
-      // For image enhancement, process immediately even with uncompressed image
-      if (transformationType === 'image-enhance') {
+      // For image enhancement or dehaze, process immediately even with uncompressed image
+      if (transformationType === 'image-enhance' || transformationType === 'image-dehaze') {
         setStep('processing');
         setError(null);
 
@@ -136,21 +136,21 @@ export default function TransformPage() {
             },
             body: JSON.stringify({
               image: imageSrc,
-              transformationType: 'image-enhance',
+              transformationType: transformationType,
             }),
           });
 
           const data: TransformResponse = await response.json();
 
           if (!data.success || !data.transformedImage) {
-            throw new Error(data.error || 'Enhancement failed');
+            throw new Error(data.error || 'Processing failed');
           }
 
           setTransformedImage(data.transformedImage);
           setStep('result');
         } catch (enhanceErr) {
-          console.error('Enhancement error:', enhanceErr);
-          setError(enhanceErr instanceof Error ? enhanceErr.message : 'Failed to enhance image');
+          console.error('Processing error:', enhanceErr);
+          setError(enhanceErr instanceof Error ? enhanceErr.message : 'Failed to process image');
           setStep('error');
         }
         return;
