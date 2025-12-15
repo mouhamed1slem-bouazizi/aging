@@ -128,6 +128,13 @@ const TRANSFORMATION_TYPES = [
     icon: '🔄',
     gradient: 'from-teal-500 to-green-500',
   },
+  {
+    id: 'photo-retouch' as TransformationType,
+    label: 'Photo Retouch',
+    description: 'Apply style transfer with reference image',
+    icon: '🎭',
+    gradient: 'from-violet-500 to-purple-500',
+  },
 ];
 
 export default function TransformationTypeSelector({

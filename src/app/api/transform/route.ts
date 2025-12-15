@@ -7,7 +7,7 @@ export const maxDuration = 300; // Increased for async operations
 export async function POST(request: NextRequest): Promise<NextResponse<TransformResponse>> {
   try {
     const body = await request.json();
-    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression, cartoon } = body as { 
+    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression, cartoon, styleImage } = body as { 
       image: string; 
       transformationType: TransformationType;
       ageCategory?: AgeCategory;
@@ -23,6 +23,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       hairstyle?: HairstyleParams;
       expression?: ExpressionParams;
       cartoon?: CartoonParams;
+      styleImage?: string; // For photo retouch
     };
 
     // Validate inputs
@@ -254,6 +255,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       // Image restore endpoint - no parameters needed
       apiUrl = 'https://www.ailabapi.com/api/image/enhance/stretch-image-recovery';
       console.log('Restoring stretched image');
+    } else if (transformationType === 'photo-retouch') {
+      // Photo retouch endpoint - requires style image
+      if (!styleImage) {
+        return NextResponse.json(
+          { success: false, error: 'No style reference image provided' },
+          { status: 400 }
+        );
+      }
+      apiUrl = 'https://www.ailabapi.com/api/image/editing/photo-retouching';
+      console.log('Applying photo retouch with style transfer');
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -344,6 +355,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       // Image sharpen doesn't need any parameters, just the image
     } else if (transformationType === 'image-restore') {
       // Image restore doesn't need any parameters, just the image
+    } else if (transformationType === 'photo-retouch') {
+      // Photo retouch requires style image
+      const styleBase64 = styleImage!.replace(/^data:image\/\w+;base64,/, '');
+      const styleBuffer = Buffer.from(styleBase64, 'base64');
+      const styleBlob = new Blob([styleBuffer], { type: 'image/jpeg' });
+      formData.append('style', styleBlob, 'style.jpg');
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -628,6 +645,24 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       transformedImage = resultImage.startsWith('data:') 
         ? resultImage 
         : `data:image/jpeg;base64,${resultImage}`;
+    } else if (transformationType === 'photo-retouch' && data.data?.image_url) {
+      // Photo retouch returns image_url - need to download it
+      const imageUrl = data.data.image_url;
+      console.log(`Downloading retouched image from: ${imageUrl}`);
+      
+      try {
+        const imageResponse = await fetch(imageUrl);
+        if (!imageResponse.ok) {
+          throw new Error(`Failed to download image: ${imageResponse.status}`);
+        }
+        
+        const imageBuffer = await imageResponse.arrayBuffer();
+        const base64Image = Buffer.from(imageBuffer).toString('base64');
+        transformedImage = `data:image/jpeg;base64,${base64Image}`;
+      } catch (downloadError) {
+        console.error('Error downloading retouched image:', downloadError);
+        throw new Error('Failed to download transformed image');
+      }
     } else if (data.result?.image) {
       const resultImage = data.result.image;
       // The API returns base64 without prefix, add it

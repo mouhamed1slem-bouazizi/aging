@@ -184,6 +184,13 @@ export default function HomePage() {
       gradient: 'from-teal-500 to-green-500',
     },
     {
+      icon: '🎭',
+      title: 'Photo Retouch',
+      description: 'Apply style transfer with reference image',
+      status: 'Available',
+      gradient: 'from-violet-500 to-purple-500',
+    },
+    {
       icon: '🎨',
       title: 'Artistic Filters',
       description: 'Transform into art styles',
