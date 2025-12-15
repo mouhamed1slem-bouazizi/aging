@@ -149,6 +149,13 @@ const TRANSFORMATION_TYPES = [
     icon: '🎨',
     gradient: 'from-pink-500 to-rose-500',
   },
+  {
+    id: 'image-upscale' as TransformationType,
+    label: 'Image Upscaler',
+    description: 'Enlarge images without quality loss',
+    icon: '🔍',
+    gradient: 'from-emerald-500 to-teal-500',
+  },
 ];
 
 export default function TransformationTypeSelector({

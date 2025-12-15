@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AGE_CATEGORIES, AILAB_API_URL, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams } from '@/types';
 
 export const maxDuration = 300; // Increased for async operations
 
 export async function POST(request: NextRequest): Promise<NextResponse<TransformResponse>> {
   try {
     const body = await request.json();
-    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression, cartoon, styleImage, crop } = body as { 
+    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression, cartoon, styleImage, crop, upscale } = body as { 
       image: string; 
       transformationType: TransformationType;
       ageCategory?: AgeCategory;
@@ -25,6 +25,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       cartoon?: CartoonParams;
       styleImage?: string; // For photo retouch
       crop?: CropParams; // For image crop
+      upscale?: UpscaleParams; // For image upscale
     };
 
     // Validate inputs
@@ -286,6 +287,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       }
       apiUrl = 'https://www.ailabapi.com/api/image/effects/image-style-migration';
       console.log('Applying style transfer');
+    } else if (transformationType === 'image-upscale') {
+      // Image upscale endpoint - requires upscale parameters
+      if (!upscale) {
+        return NextResponse.json(
+          { success: false, error: 'No upscale parameters provided' },
+          { status: 400 }
+        );
+      }
+      apiUrl = 'https://www.ailabapi.com/api/image/enhance/image-lossless-enlargement';
+      console.log(`Upscaling image ${upscale.upscaleFactor}x in ${upscale.mode} mode`);
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -397,6 +408,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       // Remove the 'image' field and add 'major' instead
       formData.delete('image');
       formData.append('major', blob, 'major.jpg');
+    } else if (transformationType === 'image-upscale') {
+      // Image upscale requires upscale factor, mode, output format, and quality
+      formData.append('upscale_factor', upscale!.upscaleFactor.toString());
+      formData.append('mode', upscale!.mode);
+      formData.append('output_format', upscale!.outputFormat);
+      if (upscale!.outputFormat === 'jpg') {
+        formData.append('output_quality', upscale!.outputQuality.toString());
+      }
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -733,6 +752,27 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
         transformedImage = `data:image/png;base64,${base64Image}`; // Style transfer returns PNG
       } catch (downloadError) {
         console.error('Error downloading style-transferred image:', downloadError);
+        throw new Error('Failed to download transformed image');
+      }
+    } else if (transformationType === 'image-upscale' && data.data?.url) {
+      // Image upscale returns url - need to download it
+      const imageUrl = data.data.url;
+      console.log(`Downloading upscaled image from: ${imageUrl}`);
+      
+      try {
+        const imageResponse = await fetch(imageUrl);
+        if (!imageResponse.ok) {
+          throw new Error(`Failed to download image: ${imageResponse.status}`);
+        }
+        
+        const imageBuffer = await imageResponse.arrayBuffer();
+        const base64Image = Buffer.from(imageBuffer).toString('base64');
+        // Use appropriate MIME type based on output format
+        const mimeType = upscale?.outputFormat === 'jpg' ? 'image/jpeg' : 
+                        upscale?.outputFormat === 'bmp' ? 'image/bmp' : 'image/png';
+        transformedImage = `data:${mimeType};base64,${base64Image}`;
+      } catch (downloadError) {
+        console.error('Error downloading upscaled image:', downloadError);
         throw new Error('Failed to download transformed image');
       }
     } else if (data.result?.image) {

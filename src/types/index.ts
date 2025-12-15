@@ -24,7 +24,7 @@ export type FaceFilterType =
   | 'nostalgia' | 'cheese' | 'butterfly';
 
 // Transformation type
-export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle' | 'expression' | 'cartoon' | 'image-enhance' | 'image-dehaze' | 'photo-colorize' | 'image-sharpen' | 'image-restore' | 'photo-retouch' | 'image-crop' | 'style-transfer';
+export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle' | 'expression' | 'cartoon' | 'image-enhance' | 'image-dehaze' | 'photo-colorize' | 'image-sharpen' | 'image-restore' | 'photo-retouch' | 'image-crop' | 'style-transfer' | 'image-upscale';
 
 export interface AgeCategoryOption {
   id: AgeCategory;
@@ -118,6 +118,18 @@ export interface CartoonParams {
 export interface CropParams {
   width: number;  // Target width in pixels
   height: number; // Target height in pixels
+}
+
+// Image upscale parameters
+export type UpscaleFactor = 2 | 3 | 4;
+export type UpscaleMode = 'base' | 'enhancement';
+export type OutputFormat = 'png' | 'jpg' | 'bmp';
+
+export interface UpscaleParams {
+  upscaleFactor: UpscaleFactor;   // 2x, 3x, or 4x
+  mode: UpscaleMode;              // base or enhancement
+  outputFormat: OutputFormat;     // png, jpg, or bmp
+  outputQuality: number;          // 30-100 (only for jpg)
 }
 
 export interface FaceFilterOption {

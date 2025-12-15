@@ -20,6 +20,7 @@ import {
   CartoonSelector,
   StyleImageSelector,
   CropDimensionsSelector,
+  UpscaleParamsSelector,
   TransformationTypeSelector,
   LoadingAnimation,
   ImageComparison,
@@ -27,11 +28,11 @@ import {
   ErrorDisplay,
   ProtectedRoute,
 } from '@/components';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams } from '@/types';
 import { AGE_CATEGORIES, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
 import { compressImage } from '@/lib/utils';
 
-type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'select-fusion' | 'select-smart-beauty' | 'select-hairstyle' | 'select-expression' | 'select-cartoon' | 'select-style' | 'select-crop' | 'select-style-transfer' | 'processing' | 'result' | 'error';
+type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'select-fusion' | 'select-smart-beauty' | 'select-hairstyle' | 'select-expression' | 'select-cartoon' | 'select-style' | 'select-crop' | 'select-style-transfer' | 'select-upscale' | 'processing' | 'result' | 'error';
 
 export default function TransformPage() {
   const [step, setStep] = useState<Step>('select-type');
@@ -54,6 +55,7 @@ export default function TransformPage() {
   const [selectedCartoon, setSelectedCartoon] = useState<CartoonParams | null>(null);
   const [styleImage, setStyleImage] = useState<string | null>(null); // For photo retouch
   const [selectedCrop, setSelectedCrop] = useState<CropParams | null>(null); // For image crop
+  const [selectedUpscale, setSelectedUpscale] = useState<UpscaleParams | null>(null); // For image upscale
   const [error, setError] = useState<string | null>(null);
 
   const handleImageSelect = useCallback(async (imageSrc: string) => {
@@ -130,6 +132,8 @@ export default function TransformPage() {
         setStep('select-crop');
       } else if (transformationType === 'style-transfer') {
         setStep('select-style-transfer');
+      } else if (transformationType === 'image-upscale') {
+        setStep('select-upscale');
       }
     } catch (err) {
       console.error('Image compression error:', err);
@@ -777,6 +781,46 @@ export default function TransformPage() {
     }
   }, [originalImage]);
 
+  const handleUpscaleSelect = useCallback(async (upscaleParams: UpscaleParams) => {
+    setSelectedUpscale(upscaleParams);
+    
+    if (!originalImage) {
+      setError('No image selected');
+      setStep('error');
+      return;
+    }
+
+    setStep('processing');
+    setError(null);
+
+    try {
+      const response = await fetch('/api/transform', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image: originalImage,
+          transformationType: 'image-upscale',
+          upscale: upscaleParams,
+        }),
+      });
+
+      const data: TransformResponse = await response.json();
+
+      if (!data.success || !data.transformedImage) {
+        throw new Error(data.error || 'Transformation failed');
+      }
+
+      setTransformedImage(data.transformedImage);
+      setStep('result');
+    } catch (err) {
+      console.error('Transform error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to transform image');
+      setStep('error');
+    }
+  }, [originalImage]);
+
   const handleStartOver = useCallback(() => {
     setOriginalImage(null);
     setTransformedImage(null);
@@ -796,6 +840,7 @@ export default function TransformPage() {
     setSelectedCartoon(null);
     setStyleImage(null);
     setSelectedCrop(null);
+    setSelectedUpscale(null);
     setError(null);
     setStep('select-type');
   }, []);
@@ -817,6 +862,7 @@ export default function TransformPage() {
     setSelectedCartoon(null);
     setStyleImage(null);
     setSelectedCrop(null);
+    setSelectedUpscale(null);
     setError(null);
     setStep('select-type');
   }, []);
@@ -1260,8 +1306,20 @@ export default function TransformPage() {
             </motion.div>
           )}
 
+          {/* Image Upscale Parameters Selection Step */}
+          {step === 'select-upscale' && originalImage && (
+            <motion.div
+              key="select-upscale"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+            >
+              <UpscaleParamsSelector onSelect={handleUpscaleSelect} />
+            </motion.div>
+          )}
+
           {/* Processing Step */}
-          {step === 'processing' && (selectedAge || selectedGender || selectedFilter || selectedLipColor || selectedBeauty || selectedSlimming || selectedSkin || selectedFusion || selectedSmartBeauty || selectedHairstyle || selectedExpression || selectedCartoon || styleImage || selectedCrop || transformationType === 'image-enhance' || transformationType === 'image-dehaze' || transformationType === 'photo-colorize' || transformationType === 'image-sharpen' || transformationType === 'image-restore') && (
+          {step === 'processing' && (selectedAge || selectedGender || selectedFilter || selectedLipColor || selectedBeauty || selectedSlimming || selectedSkin || selectedFusion || selectedSmartBeauty || selectedHairstyle || selectedExpression || selectedCartoon || styleImage || selectedCrop || selectedUpscale || transformationType === 'image-enhance' || transformationType === 'image-dehaze' || transformationType === 'photo-colorize' || transformationType === 'image-sharpen' || transformationType === 'image-restore') && (
             <motion.div
               key="processing"
               initial={{ opacity: 0, scale: 0.95 }}
