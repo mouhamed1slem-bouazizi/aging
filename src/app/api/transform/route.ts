@@ -234,6 +234,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       // Cartoon uses portrait animation endpoint
       apiUrl = 'https://www.ailabapi.com/api/portrait/effects/portrait-animation';
       console.log(`Applying cartoon style: ${cartoon.cartoonType}`);
+    } else if (transformationType === 'image-enhance') {
+      // Image enhancement endpoint - no parameters needed
+      apiUrl = 'https://www.ailabapi.com/api/image/enhance/image-contrast-enhancement';
+      console.log('Enhancing image contrast');
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -314,6 +318,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
     } else if (transformationType === 'cartoon') {
       // Cartoon API requires type parameter
       formData.append('type', cartoon!.cartoonType);
+    } else if (transformationType === 'image-enhance') {
+      // Image enhancement doesn't need any parameters, just the image
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -568,6 +574,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
         console.error('Error downloading cartoon image:', downloadError);
         throw new Error('Failed to download transformed image');
       }
+    } else if (transformationType === 'image-enhance' && data.image) {
+      // Image enhancement returns base64 in 'image' field at root level
+      const resultImage = data.image;
+      transformedImage = resultImage.startsWith('data:') 
+        ? resultImage 
+        : `data:image/jpeg;base64,${resultImage}`;
     } else if (data.result?.image) {
       const resultImage = data.result.image;
       // The API returns base64 without prefix, add it

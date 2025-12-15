@@ -149,6 +149,13 @@ export default function HomePage() {
       gradient: 'from-indigo-500 to-purple-500',
     },
     {
+      icon: '✨',
+      title: 'Image Enhancer',
+      description: 'Enhance image contrast and quality',
+      status: 'Available',
+      gradient: 'from-green-500 to-teal-500',
+    },
+    {
       icon: '🎨',
       title: 'Artistic Filters',
       description: 'Transform into art styles',

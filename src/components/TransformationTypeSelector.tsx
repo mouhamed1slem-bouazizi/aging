@@ -93,6 +93,13 @@ const TRANSFORMATION_TYPES = [
     icon: '🎨',
     gradient: 'from-indigo-500 to-purple-500',
   },
+  {
+    id: 'image-enhance' as TransformationType,
+    label: 'Image Enhancer',
+    description: 'Enhance image contrast and quality',
+    icon: '✨',
+    gradient: 'from-green-500 to-teal-500',
+  },
 ];
 
 export default function TransformationTypeSelector({

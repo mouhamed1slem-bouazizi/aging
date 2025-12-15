@@ -59,6 +59,39 @@ export default function TransformPage() {
       setOriginalImage(compressed);
       setShowCamera(false);
       
+      // For image enhancement, process immediately without selection step
+      if (transformationType === 'image-enhance') {
+        setStep('processing');
+        setError(null);
+
+        try {
+          const response = await fetch('/api/transform', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              image: compressed,
+              transformationType: 'image-enhance',
+            }),
+          });
+
+          const data: TransformResponse = await response.json();
+
+          if (!data.success || !data.transformedImage) {
+            throw new Error(data.error || 'Enhancement failed');
+          }
+
+          setTransformedImage(data.transformedImage);
+          setStep('result');
+        } catch (err) {
+          console.error('Enhancement error:', err);
+          setError(err instanceof Error ? err.message : 'Failed to enhance image');
+          setStep('error');
+        }
+        return;
+      }
+      
       // After image upload, proceed to the specific transformation step
       if (transformationType === 'age') {
         setStep('select-age');
@@ -89,6 +122,39 @@ export default function TransformPage() {
       console.error('Image compression error:', err);
       setOriginalImage(imageSrc);
       setShowCamera(false);
+      
+      // For image enhancement, process immediately even with uncompressed image
+      if (transformationType === 'image-enhance') {
+        setStep('processing');
+        setError(null);
+
+        try {
+          const response = await fetch('/api/transform', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              image: imageSrc,
+              transformationType: 'image-enhance',
+            }),
+          });
+
+          const data: TransformResponse = await response.json();
+
+          if (!data.success || !data.transformedImage) {
+            throw new Error(data.error || 'Enhancement failed');
+          }
+
+          setTransformedImage(data.transformedImage);
+          setStep('result');
+        } catch (enhanceErr) {
+          console.error('Enhancement error:', enhanceErr);
+          setError(enhanceErr instanceof Error ? enhanceErr.message : 'Failed to enhance image');
+          setStep('error');
+        }
+        return;
+      }
       
       // After image upload, proceed to the specific transformation step
       if (transformationType === 'age') {
