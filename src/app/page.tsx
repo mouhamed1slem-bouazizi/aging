@@ -170,6 +170,13 @@ export default function HomePage() {
       gradient: 'from-pink-500 to-purple-500',
     },
     {
+      icon: '🔍',
+      title: 'Image Sharpen',
+      description: 'Enhance image sharpness and clarity',
+      status: 'Available',
+      gradient: 'from-orange-500 to-red-500',
+    },
+    {
       icon: '🎨',
       title: 'Artistic Filters',
       description: 'Transform into art styles',

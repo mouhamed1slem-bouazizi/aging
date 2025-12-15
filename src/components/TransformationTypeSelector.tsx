@@ -114,6 +114,13 @@ const TRANSFORMATION_TYPES = [
     icon: '🎨',
     gradient: 'from-pink-500 to-purple-500',
   },
+  {
+    id: 'image-sharpen' as TransformationType,
+    label: 'Image Sharpen',
+    description: 'Enhance image sharpness and clarity',
+    icon: '🔍',
+    gradient: 'from-orange-500 to-red-500',
+  },
 ];
 
 export default function TransformationTypeSelector({
