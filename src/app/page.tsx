@@ -199,6 +199,13 @@ export default function HomePage() {
     },
     {
       icon: '🎨',
+      title: 'Style Transfer',
+      description: 'Transfer artistic style between images',
+      status: 'Available',
+      gradient: 'from-pink-500 to-rose-500',
+    },
+    {
+      icon: '🎨',
       title: 'Artistic Filters',
       description: 'Transform into art styles',
       status: 'Coming Soon',

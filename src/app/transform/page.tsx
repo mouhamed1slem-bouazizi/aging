@@ -31,7 +31,7 @@ import { AgeCategory, GenderOption, FaceFilterType, TransformationType, Transfor
 import { AGE_CATEGORIES, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
 import { compressImage } from '@/lib/utils';
 
-type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'select-fusion' | 'select-smart-beauty' | 'select-hairstyle' | 'select-expression' | 'select-cartoon' | 'select-style' | 'select-crop' | 'processing' | 'result' | 'error';
+type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'select-fusion' | 'select-smart-beauty' | 'select-hairstyle' | 'select-expression' | 'select-cartoon' | 'select-style' | 'select-crop' | 'select-style-transfer' | 'processing' | 'result' | 'error';
 
 export default function TransformPage() {
   const [step, setStep] = useState<Step>('select-type');
@@ -128,6 +128,8 @@ export default function TransformPage() {
         setStep('select-style');
       } else if (transformationType === 'image-crop') {
         setStep('select-crop');
+      } else if (transformationType === 'style-transfer') {
+        setStep('select-style-transfer');
       }
     } catch (err) {
       console.error('Image compression error:', err);
@@ -735,6 +737,46 @@ export default function TransformPage() {
     }
   }, [originalImage]);
 
+  const handleStyleTransferSelect = useCallback(async (styleImageSrc: string) => {
+    setStyleImage(styleImageSrc);
+    
+    if (!originalImage) {
+      setError('No image selected');
+      setStep('error');
+      return;
+    }
+
+    setStep('processing');
+    setError(null);
+
+    try {
+      const response = await fetch('/api/transform', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image: originalImage,
+          transformationType: 'style-transfer',
+          styleImage: styleImageSrc,
+        }),
+      });
+
+      const data: TransformResponse = await response.json();
+
+      if (!data.success || !data.transformedImage) {
+        throw new Error(data.error || 'Transformation failed');
+      }
+
+      setTransformedImage(data.transformedImage);
+      setStep('result');
+    } catch (err) {
+      console.error('Transform error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to transform image');
+      setStep('error');
+    }
+  }, [originalImage]);
+
   const handleStartOver = useCallback(() => {
     setOriginalImage(null);
     setTransformedImage(null);
@@ -783,7 +825,7 @@ export default function TransformPage() {
     if (step === 'upload') {
       setStep('select-type');
       setOriginalImage(null);
-    } else if (step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color' || step === 'select-beauty' || step === 'select-slimming' || step === 'select-skin' || step === 'select-fusion' || step === 'select-smart-beauty' || step === 'select-hairstyle' || step === 'select-expression' || step === 'select-cartoon' || step === 'select-style' || step === 'select-crop') {
+    } else if (step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color' || step === 'select-beauty' || step === 'select-slimming' || step === 'select-skin' || step === 'select-fusion' || step === 'select-smart-beauty' || step === 'select-hairstyle' || step === 'select-expression' || step === 'select-cartoon' || step === 'select-style' || step === 'select-crop' || step === 'select-style-transfer') {
       setStep('upload');
       setSelectedAge(null);
       setSelectedGender(null);
@@ -887,6 +929,8 @@ export default function TransformPage() {
         return 'Photo Retouch';
       case 'select-crop':
         return 'AI Image Crop';
+      case 'select-style-transfer':
+        return 'Style Transfer';
       case 'processing':
         return 'Processing';
       case 'result':
@@ -951,7 +995,7 @@ export default function TransformPage() {
       <div className="sticky top-16 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            {(step === 'upload' || step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color' || step === 'select-beauty' || step === 'select-slimming' || step === 'select-skin' || step === 'select-fusion' || step === 'select-smart-beauty' || step === 'select-hairstyle' || step === 'select-expression' || step === 'select-cartoon' || step === 'select-style' || step === 'select-crop' || step === 'error') && (
+            {(step === 'upload' || step === 'select-age' || step === 'select-gender' || step === 'select-filter' || step === 'select-lip-color' || step === 'select-beauty' || step === 'select-slimming' || step === 'select-skin' || step === 'select-fusion' || step === 'select-smart-beauty' || step === 'select-hairstyle' || step === 'select-expression' || step === 'select-cartoon' || step === 'select-style' || step === 'select-crop' || step === 'select-style-transfer' || step === 'error') && (
               <button
                 onClick={handleGoBack}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -979,6 +1023,7 @@ export default function TransformPage() {
                   {step === 'select-cartoon' && 'Choose your favorite cartoon style'}
                   {step === 'select-style' && 'Upload a style reference image'}
                   {step === 'select-crop' && 'Set your desired crop dimensions'}
+                  {step === 'select-style-transfer' && 'Upload an artistic style image'}
                   {step === 'result' && 'Your transformation is ready!'}
                 </p>
               )}
@@ -1200,6 +1245,18 @@ export default function TransformPage() {
               exit={{ opacity: 0, x: 20 }}
             >
               <CropDimensionsSelector onSelect={handleCropSelect} originalImage={originalImage} />
+            </motion.div>
+          )}
+
+          {/* Style Transfer Style Selection Step */}
+          {step === 'select-style-transfer' && originalImage && (
+            <motion.div
+              key="select-style-transfer"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+            >
+              <StyleImageSelector onSelect={handleStyleTransferSelect} onBack={handleGoBack} />
             </motion.div>
           )}
 

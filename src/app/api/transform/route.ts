@@ -276,6 +276,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       }
       apiUrl = 'https://www.ailabapi.com/api/image/editing/image-cropping';
       console.log(`Cropping image to ${crop.width}x${crop.height}`);
+    } else if (transformationType === 'style-transfer') {
+      // Style transfer endpoint - requires style image
+      if (!styleImage) {
+        return NextResponse.json(
+          { success: false, error: 'No style reference image provided' },
+          { status: 400 }
+        );
+      }
+      apiUrl = 'https://www.ailabapi.com/api/image/effects/image-style-migration';
+      console.log('Applying style transfer');
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -376,6 +386,17 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       // Image crop requires width and height
       formData.append('width', crop!.width.toString());
       formData.append('height', crop!.height.toString());
+    } else if (transformationType === 'style-transfer') {
+      // Style transfer requires style image (uses 'major' for content image, not 'image')
+      const styleBase64 = styleImage!.replace(/^data:image\/\w+;base64,/, '');
+      const styleBuffer = Buffer.from(styleBase64, 'base64');
+      const styleBlob = new Blob([styleBuffer], { type: 'image/jpeg' });
+      formData.append('style', styleBlob, 'style.jpg');
+      
+      // Need to change the content image field name from 'image' to 'major'
+      // Remove the 'image' field and add 'major' instead
+      formData.delete('image');
+      formData.append('major', blob, 'major.jpg');
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -694,6 +715,24 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
         transformedImage = `data:image/jpeg;base64,${base64Image}`;
       } catch (downloadError) {
         console.error('Error downloading cropped image:', downloadError);
+        throw new Error('Failed to download transformed image');
+      }
+    } else if (transformationType === 'style-transfer' && data.data?.url) {
+      // Style transfer returns url - need to download it
+      const imageUrl = data.data.url;
+      console.log(`Downloading style-transferred image from: ${imageUrl}`);
+      
+      try {
+        const imageResponse = await fetch(imageUrl);
+        if (!imageResponse.ok) {
+          throw new Error(`Failed to download image: ${imageResponse.status}`);
+        }
+        
+        const imageBuffer = await imageResponse.arrayBuffer();
+        const base64Image = Buffer.from(imageBuffer).toString('base64');
+        transformedImage = `data:image/png;base64,${base64Image}`; // Style transfer returns PNG
+      } catch (downloadError) {
+        console.error('Error downloading style-transferred image:', downloadError);
         throw new Error('Failed to download transformed image');
       }
     } else if (data.result?.image) {

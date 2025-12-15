@@ -142,6 +142,13 @@ const TRANSFORMATION_TYPES = [
     icon: '✂️',
     gradient: 'from-blue-500 to-cyan-500',
   },
+  {
+    id: 'style-transfer' as TransformationType,
+    label: 'Style Transfer',
+    description: 'Transfer artistic style between images',
+    icon: '🎨',
+    gradient: 'from-pink-500 to-rose-500',
+  },
 ];
 
 export default function TransformationTypeSelector({
