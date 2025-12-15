@@ -24,7 +24,7 @@ export type FaceFilterType =
   | 'nostalgia' | 'cheese' | 'butterfly';
 
 // Transformation type
-export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle' | 'expression' | 'cartoon' | 'image-enhance' | 'image-dehaze' | 'photo-colorize' | 'image-sharpen' | 'image-restore' | 'photo-retouch' | 'image-crop' | 'style-transfer' | 'image-upscale' | 'photo-painting';
+export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle' | 'expression' | 'cartoon' | 'image-enhance' | 'image-dehaze' | 'photo-colorize' | 'image-sharpen' | 'image-restore' | 'photo-retouch' | 'image-crop' | 'style-transfer' | 'image-upscale' | 'photo-painting' | 'anime-generator';
 
 export interface AgeCategoryOption {
   id: AgeCategory;
@@ -134,6 +134,9 @@ export interface UpscaleParams {
 
 // Painting style parameters
 export type PaintingStyle = 'cartoon' | 'pencil' | 'color_pencil' | 'warm' | 'wave' | 'lavender' | 'mononoke' | 'scream' | 'gothic';
+
+// Anime style parameters (0-8 index)
+export type AnimeStyleIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 export interface FaceFilterOption {
   id: FaceFilterType;

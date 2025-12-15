@@ -219,6 +219,13 @@ export default function HomePage() {
       gradient: 'from-amber-500 to-orange-500',
     },
     {
+      icon: '🎌',
+      title: 'Anime Generator',
+      description: 'Create stunning anime-style artwork',
+      status: 'Available',
+      gradient: 'from-fuchsia-500 to-purple-500',
+    },
+    {
       icon: '🎨',
       title: 'Artistic Filters',
       description: 'Transform into art styles',

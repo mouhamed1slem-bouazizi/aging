@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AGE_CATEGORIES, AILAB_API_URL, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams, PaintingStyle } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams, PaintingStyle, AnimeStyleIndex } from '@/types';
 
 export const maxDuration = 300; // Increased for async operations
 
 export async function POST(request: NextRequest): Promise<NextResponse<TransformResponse>> {
   try {
     const body = await request.json();
-    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression, cartoon, styleImage, crop, upscale, paintingStyle } = body as { 
+    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression, cartoon, styleImage, crop, upscale, paintingStyle, animeStyle } = body as { 
       image: string; 
       transformationType: TransformationType;
       ageCategory?: AgeCategory;
@@ -27,6 +27,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       crop?: CropParams; // For image crop
       upscale?: UpscaleParams; // For image upscale
       paintingStyle?: PaintingStyle; // For photo to painting
+      animeStyle?: AnimeStyleIndex; // For anime generator
     };
 
     // Validate inputs
@@ -308,6 +309,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       }
       apiUrl = 'https://www.ailabapi.com/api/image/effects/image-style-conversion';
       console.log(`Converting to ${paintingStyle} painting style`);
+    } else if (transformationType === 'anime-generator') {
+      // Anime generator endpoint - requires anime style index (async task)
+      if (animeStyle === undefined) {
+        return NextResponse.json(
+          { success: false, error: 'No anime style provided' },
+          { status: 400 }
+        );
+      }
+      apiUrl = 'https://www.ailabapi.com/api/image/effects/ai-anime-generator';
+      console.log(`Generating anime with style ${animeStyle}`);
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -430,6 +441,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
     } else if (transformationType === 'photo-painting') {
       // Photo to painting requires painting style option
       formData.append('option', paintingStyle!);
+    } else if (transformationType === 'anime-generator') {
+      // Anime generator requires task_type and index (async task)
+      formData.append('task_type', 'async');
+      formData.append('index', animeStyle!.toString());
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -478,19 +493,19 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       );
     }
 
-    // Handle async hairstyle transformation
-    if (transformationType === 'hairstyle') {
+    // Handle async hairstyle and anime-generator transformations
+    if (transformationType === 'hairstyle' || transformationType === 'anime-generator') {
       // For async tasks, task_id is at root level, not in data.task_id
       const taskId = data.task_id;
       if (!taskId) {
-        console.error('No task_id in hairstyle response:', JSON.stringify(data, null, 2));
+        console.error(`No task_id in ${transformationType} response:`, JSON.stringify(data, null, 2));
         return NextResponse.json(
-          { success: false, error: 'Failed to start hairstyle transformation' },
+          { success: false, error: `Failed to start ${transformationType} transformation` },
           { status: 500 }
         );
       }
 
-      console.log(`Hairstyle task started: ${taskId}`);
+      console.log(`${transformationType} task started: ${taskId}`);
 
       // Poll for task completion
       const checkUrl = 'https://www.ailabapi.com/api/common/query-async-task-result';

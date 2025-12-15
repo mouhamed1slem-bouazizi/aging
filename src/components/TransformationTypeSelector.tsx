@@ -163,6 +163,13 @@ const TRANSFORMATION_TYPES = [
     icon: '🖼️',
     gradient: 'from-amber-500 to-orange-500',
   },
+  {
+    id: 'anime-generator' as TransformationType,
+    label: 'Anime Generator',
+    description: 'Transform photos into anime art styles',
+    icon: '🎌',
+    gradient: 'from-fuchsia-500 to-purple-500',
+  },
 ];
 
 export default function TransformationTypeSelector({
