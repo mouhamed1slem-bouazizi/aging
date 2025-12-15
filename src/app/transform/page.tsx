@@ -64,34 +64,34 @@ export default function TransformPage() {
         setStep('processing');
         setError(null);
 
-        // Add a small delay to ensure loading animation is visible
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Use setTimeout to allow React to render the processing animation first
+        setTimeout(async () => {
+          try {
+            const response = await fetch('/api/transform', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                image: compressed,
+                transformationType: transformationType,
+              }),
+            });
 
-        try {
-          const response = await fetch('/api/transform', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              image: compressed,
-              transformationType: transformationType,
-            }),
-          });
+            const data: TransformResponse = await response.json();
 
-          const data: TransformResponse = await response.json();
+            if (!data.success || !data.transformedImage) {
+              throw new Error(data.error || 'Processing failed');
+            }
 
-          if (!data.success || !data.transformedImage) {
-            throw new Error(data.error || 'Processing failed');
+            setTransformedImage(data.transformedImage);
+            setStep('result');
+          } catch (err) {
+            console.error('Processing error:', err);
+            setError(err instanceof Error ? err.message : 'Failed to process image');
+            setStep('error');
           }
-
-          setTransformedImage(data.transformedImage);
-          setStep('result');
-        } catch (err) {
-          console.error('Processing error:', err);
-          setError(err instanceof Error ? err.message : 'Failed to process image');
-          setStep('error');
-        }
+        }, 100); // Small delay to allow UI to render
         return;
       }
       
@@ -131,34 +131,34 @@ export default function TransformPage() {
         setStep('processing');
         setError(null);
 
-        // Add a small delay to ensure loading animation is visible
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Use setTimeout to allow React to render the processing animation first
+        setTimeout(async () => {
+          try {
+            const response = await fetch('/api/transform', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                image: imageSrc,
+                transformationType: transformationType,
+              }),
+            });
 
-        try {
-          const response = await fetch('/api/transform', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              image: imageSrc,
-              transformationType: transformationType,
-            }),
-          });
+            const data: TransformResponse = await response.json();
 
-          const data: TransformResponse = await response.json();
+            if (!data.success || !data.transformedImage) {
+              throw new Error(data.error || 'Processing failed');
+            }
 
-          if (!data.success || !data.transformedImage) {
-            throw new Error(data.error || 'Processing failed');
+            setTransformedImage(data.transformedImage);
+            setStep('result');
+          } catch (enhanceErr) {
+            console.error('Processing error:', enhanceErr);
+            setError(enhanceErr instanceof Error ? enhanceErr.message : 'Failed to process image');
+            setStep('error');
           }
-
-          setTransformedImage(data.transformedImage);
-          setStep('result');
-        } catch (enhanceErr) {
-          console.error('Processing error:', enhanceErr);
-          setError(enhanceErr instanceof Error ? enhanceErr.message : 'Failed to process image');
-          setStep('error');
-        }
+        }, 100); // Small delay to allow UI to render
         return;
       }
       
