@@ -64,6 +64,9 @@ export default function TransformPage() {
         setStep('processing');
         setError(null);
 
+        // Add a small delay to ensure loading animation is visible
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         try {
           const response = await fetch('/api/transform', {
             method: 'POST',
@@ -127,6 +130,9 @@ export default function TransformPage() {
       if (transformationType === 'image-enhance' || transformationType === 'image-dehaze' || transformationType === 'photo-colorize') {
         setStep('processing');
         setError(null);
+
+        // Add a small delay to ensure loading animation is visible
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         try {
           const response = await fetch('/api/transform', {
