@@ -578,8 +578,19 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
     // Check for API error in response
     if (data.error_code !== 0) {
       console.error('API returned error:', data);
+      
+      // Provide user-friendly error messages
+      let errorMessage = data.error_msg || 'Transformation failed';
+      
+      // Handle specific error codes
+      if (data.error_code === 500 || data.error_code_str === 'AI_SERVICE_ERROR') {
+        errorMessage = `The AI service is temporarily unavailable. This is a server-side issue. Please try again in a few moments. If the problem persists, the ${transformationType} feature may be experiencing service disruptions.`;
+      } else if (data.error_code === 422) {
+        errorMessage = 'Invalid input. Please ensure your image meets the requirements (JPEG/PNG/BMP, under 5MB, less than 4096x4096px).';
+      }
+      
       return NextResponse.json(
-        { success: false, error: data.error_msg || 'Transformation failed' },
+        { success: false, error: errorMessage },
         { status: 400 }
       );
     }
