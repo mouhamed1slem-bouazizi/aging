@@ -586,7 +586,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       if (data.error_code === 500 || data.error_code_str === 'AI_SERVICE_ERROR') {
         errorMessage = `The AI service is temporarily unavailable. This is a server-side issue. Please try again in a few moments. If the problem persists, the ${transformationType} feature may be experiencing service disruptions.`;
       } else if (data.error_code === 422) {
-        errorMessage = 'Invalid input. Please ensure your image meets the requirements (JPEG/PNG/BMP, under 5MB, less than 4096x4096px).';
+        // Check for specific 422 error types
+        if (data.error_detail?.code === 'ERROR_NO_FACE_IN_FILE') {
+          errorMessage = 'No face detected in the image. Please upload a clear portrait photo with a visible face for this transformation.';
+        } else if (data.error_code_str === 'FILE_CONTENT_NON_COMPLIANCE') {
+          errorMessage = 'The image does not meet requirements. Please ensure: 1) Clear face is visible, 2) Image format is JPEG/PNG/BMP, 3) File size is under 5MB, 4) Resolution is less than 4096x4096px.';
+        } else {
+          errorMessage = 'Invalid input. Please ensure your image meets the requirements (JPEG/PNG/BMP, under 5MB, less than 4096x4096px with a clear face visible).';
+        }
       }
       
       return NextResponse.json(
