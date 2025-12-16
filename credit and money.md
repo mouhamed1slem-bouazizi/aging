@@ -1,128 +1,61 @@
-1000 credit  == 9.99$
+5 credit only one time after that user need to upgrade == Free user 
+400 credit monthly add to the balance == 4.99$ 
+1000 credit monthly add to the balance == 9.99$
+3500 credit monthly add to the balance == 19.99$
 
 
-⏳
+Now every feature will cost like the list below:
+
 Age Transformation  ==  8
-https://www.ailabtools.com/docs/ai-portrait/effects/face-attribute-editing/api
 
-
-⚧️
 Gender Transformation  ==  8
-https://www.ailabtools.com/docs/ai-portrait/effects/face-attribute-editing/api
 
-
-✨
 Face Filters  ==  1
-https://www.ailabtools.com/docs/ai-portrait/effects/face-filter/api
 
-
-💄
 Lip Color  ==  2
-https://www.ailabtools.com/docs/ai-portrait/effects/lips-color-changer/api
 
-
-💎
 Face Beauty  ==  5
- https://www.ailabtools.com/docs/ai-portrait/effects/face-beauty/api
 
+Face Slimming  ==  5
 
-🌟
-Face Slimming  ==  
-https://www.ailabtools.com/docs/ai-portrait/effects/face-slimming/api
-https://www.ailabtools.com/docs/ai-portrait/effects/smart-face-slimming/api
-
-
-🌸
 Skin Beauty  ==  5
-https://www.ailabtools.com/docs/ai-portrait/effects/skin-beauty/api
 
-
-🎭
 Merge Portraits  ==  8
-https://www.ailabtools.com/docs/ai-portrait/effects/face-fusion/api
 
-
-✨
 Smart Beauty  ==  8
-https://www.ailabtools.com/docs/ai-portrait/effects/smart-beauty/api
 
-
-✂️
 Hairstyle Changer  ==  10
-https://www.ailabtools.com/docs/ai-portrait/effects/hairstyle-editor-pro/api
 
+Facial Expression  ==  12
 
-😊
-Facial Expression  ==  
-Change your facial emotions
+Cartoon Yourself  ==  20
 
+Image Enhancer  ==  15
 
-🎨
-Cartoon Yourself  ==  
-Transform into cartoon styles
+Image Dehaze  ==  1
 
+Photo Colorize  ==  2
 
-✨
-Image Enhancer  ==  
-Enhance image contrast and quality
+Image Sharpen  ==  2
 
+Image Restore  ==  2
 
-🌫️
-Image Dehaze  ==  
-Remove fog and haze from images
+Photo Retouch  ==  3
 
+AI Image Crop  ==  3
 
-🎨
-Photo Colorize  ==  
-Add color to black and white photos
+Style Transfer  ==  3
 
+Image Upscaler  ==  5
 
-🔍
-Image Sharpen  ==  
-Enhance image sharpness and clarity
+Photo to Painting  ==  7
 
+Anime Generator  ==  10
 
-🔄
-Image Restore  ==  
-Fix stretched and distorted images
-
-
-🎭
-Photo Retouch  ==  
-Apply style transfer with reference image
-
-
-✂️
-AI Image Crop  ==  
-Smart crop with custom dimensions
-
-
-🎨
-Style Transfer  ==  
-Transfer artistic style between images
-
-
-🔍
-Image Upscaler  ==  
-Enlarge images without quality loss
-
-
-🖼️
-Photo to Painting  ==  
-Convert photos to artistic paintings
-
-
-🎌
-Anime Generator  ==  
-Transform photos into anime art styles
-
-
-🔲
-Image Extender  ==  
-Expand images in any direction with AI
-
+Image Extender  ==  25
 
 Try on Clothes  ==  15
-https://www.ailabtools.com/docs/ai-portrait/editing/try-on-clothes
 
+Face Enhancer  ==  15
 
+Hitchcock Effects  ==  15

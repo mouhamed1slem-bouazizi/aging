@@ -11,6 +11,7 @@ import {
   signInWithPopup,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { initializeUserCredits } from '@/lib/credits';
 
 interface AuthContextType {
   user: User | null;
@@ -49,13 +50,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     if (!auth) throw new Error('Firebase not initialized');
-    await createUserWithEmailAndPassword(auth, email, password);
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    // Initialize credits for new user
+    await initializeUserCredits(userCredential.user.uid);
   };
 
   const signInWithGoogle = async () => {
     if (!auth) throw new Error('Firebase not initialized');
     const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    const userCredential = await signInWithPopup(auth, provider);
+    // Initialize credits for new Google users
+    await initializeUserCredits(userCredential.user.uid);
   };
 
   const signOut = async () => {

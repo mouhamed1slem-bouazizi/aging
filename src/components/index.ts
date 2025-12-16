@@ -32,3 +32,4 @@ export { default as ImageComparison } from './ImageComparison';
 export { default as ResultActions } from './ResultActions';
 export { default as ErrorDisplay } from './ErrorDisplay';
 export { default as ProtectedRoute } from './ProtectedRoute';
+export { default as CreditsDisplay } from './CreditsDisplay';

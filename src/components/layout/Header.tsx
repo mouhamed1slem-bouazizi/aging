@@ -6,6 +6,7 @@ import { Menu, X, Sparkles, LogOut, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { APP_CONFIG } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
+import { CreditsDisplay } from '@/components';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -49,6 +50,7 @@ export default function Header() {
             </Link>
             {user ? (
               <div className="flex items-center gap-4">
+                <CreditsDisplay />
                 <div className="flex items-center gap-2 px-4 py-2 bg-purple-50 rounded-full">
                   <User className="w-4 h-4 text-purple-600" />
                   <span className="text-sm font-medium text-purple-700">
@@ -121,6 +123,9 @@ export default function Header() {
                 </Link>
                 {user ? (
                   <>
+                    <div className="mx-4 mb-2">
+                      <CreditsDisplay />
+                    </div>
                     <div className="mx-4 px-4 py-3 bg-purple-50 rounded-lg">
                       <div className="flex items-center gap-2 text-purple-700">
                         <User className="w-4 h-4" />
