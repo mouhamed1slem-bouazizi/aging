@@ -177,6 +177,13 @@ const TRANSFORMATION_TYPES = [
     icon: '🔲',
     gradient: 'from-cyan-500 to-blue-500',
   },
+  {
+    id: 'try-on-clothes' as TransformationType,
+    label: 'Try-on Clothes',
+    description: 'Virtual clothing try-on experience',
+    icon: '👗',
+    gradient: 'from-rose-500 to-pink-500',
+  },
 ];
 
 export default function TransformationTypeSelector({

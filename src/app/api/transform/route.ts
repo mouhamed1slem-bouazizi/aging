@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AGE_CATEGORIES, AILAB_API_URL, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams, PaintingStyle, AnimeStyleIndex, ImageExtenderParams } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams, PaintingStyle, AnimeStyleIndex, ImageExtenderParams, TryOnClothesParams } from '@/types';
 
 export const maxDuration = 300; // Increased for async operations
 
 export async function POST(request: NextRequest): Promise<NextResponse<TransformResponse>> {
   try {
     const body = await request.json();
-    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression, cartoon, styleImage, crop, upscale, paintingStyle, animeStyle, extender } = body as { 
+    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression, cartoon, styleImage, crop, upscale, paintingStyle, animeStyle, extender, tryOnClothes } = body as { 
       image: string; 
       transformationType: TransformationType;
       ageCategory?: AgeCategory;
@@ -29,6 +29,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       paintingStyle?: PaintingStyle; // For photo to painting
       animeStyle?: AnimeStyleIndex; // For anime generator
       extender?: ImageExtenderParams; // For image extender
+      tryOnClothes?: TryOnClothesParams; // For try-on clothes
     };
 
     // Validate inputs
@@ -330,6 +331,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       }
       apiUrl = 'https://www.ailabapi.com/api/image/editing/ai-image-extender';
       console.log(`Extending image: top=${extender.top}, bottom=${extender.bottom}, left=${extender.left}, right=${extender.right}`);
+    } else if (transformationType === 'try-on-clothes') {
+      // Try-on clothes endpoint - requires clothing image and type
+      if (!tryOnClothes) {
+        return NextResponse.json(
+          { success: false, error: 'No clothing parameters provided' },
+          { status: 400 }
+        );
+      }
+      apiUrl = 'https://www.ailabapi.com/api/portrait/editing/try-on-clothes';
+      console.log(`Try-on clothes: type=${tryOnClothes.clothesType}`);
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -468,6 +479,17 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       formData.append('seed', extender!.seed.toString());
       formData.append('max_height', extender!.maxHeight.toString());
       formData.append('max_width', extender!.maxWidth.toString());
+    } else if (transformationType === 'try-on-clothes') {
+      // Try-on clothes requires task_type, person_image, clothes_image, and clothes_type
+      formData.append('task_type', 'async');
+      
+      // Add clothing image
+      const clothesBuffer = Buffer.from(tryOnClothes!.clothesImage.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+      const clothesBlob = new Blob([clothesBuffer]);
+      formData.append('clothes_image', clothesBlob, 'clothes.jpg');
+      
+      // Add clothes type
+      formData.append('clothes_type', tryOnClothes!.clothesType);
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -517,7 +539,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
     }
 
     // Handle async hairstyle and anime-generator transformations
-    if (transformationType === 'hairstyle' || transformationType === 'anime-generator') {
+    if (transformationType === 'hairstyle' || transformationType === 'anime-generator' || transformationType === 'try-on-clothes') {
       // For async tasks, task_id is at root level, not in data.task_id
       const taskId = data.task_id;
       if (!taskId) {

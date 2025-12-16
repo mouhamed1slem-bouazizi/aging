@@ -233,6 +233,13 @@ export default function HomePage() {
       gradient: 'from-cyan-500 to-blue-500',
     },
     {
+      icon: '👗',
+      title: 'Try-on Clothes',
+      description: 'Virtual clothing try-on experience',
+      status: 'Available',
+      gradient: 'from-rose-500 to-pink-500',
+    },
+    {
       icon: '🎨',
       title: 'Artistic Filters',
       description: 'Transform into art styles',

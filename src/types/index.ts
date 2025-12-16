@@ -24,7 +24,7 @@ export type FaceFilterType =
   | 'nostalgia' | 'cheese' | 'butterfly';
 
 // Transformation type
-export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle' | 'expression' | 'cartoon' | 'image-enhance' | 'image-dehaze' | 'photo-colorize' | 'image-sharpen' | 'image-restore' | 'photo-retouch' | 'image-crop' | 'style-transfer' | 'image-upscale' | 'photo-painting' | 'anime-generator' | 'image-extender';
+export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle' | 'expression' | 'cartoon' | 'image-enhance' | 'image-dehaze' | 'photo-colorize' | 'image-sharpen' | 'image-restore' | 'photo-retouch' | 'image-crop' | 'style-transfer' | 'image-upscale' | 'photo-painting' | 'anime-generator' | 'image-extender' | 'try-on-clothes';
 
 export interface AgeCategoryOption {
   id: AgeCategory;
@@ -150,6 +150,14 @@ export interface ImageExtenderParams {
   seed: number;       // -1+ random seed (default 0, -1 for random)
   maxHeight: number;  // 0+ max output height (default 1920)
   maxWidth: number;   // 0+ max output width (default 1920)
+}
+
+// Try-on clothes parameters
+export type ClothesType = 'upper_body' | 'lower_body' | 'full_body';
+
+export interface TryOnClothesParams {
+  clothesImage: string;  // Clothing image base64
+  clothesType: ClothesType;
 }
 
 export interface FaceFilterOption {

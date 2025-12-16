@@ -24,6 +24,7 @@ import {
   PaintingStyleSelector,
   AnimeStyleSelector,
   ImageExtenderSelector,
+  TryOnClothesSelector,
   TransformationTypeSelector,
   LoadingAnimation,
   ImageComparison,
@@ -31,11 +32,11 @@ import {
   ErrorDisplay,
   ProtectedRoute,
 } from '@/components';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams, PaintingStyle, AnimeStyleIndex, ImageExtenderParams } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams, PaintingStyle, AnimeStyleIndex, ImageExtenderParams, TryOnClothesParams } from '@/types';
 import { AGE_CATEGORIES, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
 import { compressImage } from '@/lib/utils';
 
-type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'select-fusion' | 'select-smart-beauty' | 'select-hairstyle' | 'select-expression' | 'select-cartoon' | 'select-style' | 'select-crop' | 'select-style-transfer' | 'select-upscale' | 'select-painting' | 'select-anime' | 'select-extender' | 'processing' | 'result' | 'error';
+type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'select-fusion' | 'select-smart-beauty' | 'select-hairstyle' | 'select-expression' | 'select-cartoon' | 'select-style' | 'select-crop' | 'select-style-transfer' | 'select-upscale' | 'select-painting' | 'select-anime' | 'select-extender' | 'select-try-on-clothes' | 'processing' | 'result' | 'error';
 
 export default function TransformPage() {
   const [step, setStep] = useState<Step>('select-type');
@@ -62,6 +63,7 @@ export default function TransformPage() {
   const [selectedPaintingStyle, setSelectedPaintingStyle] = useState<PaintingStyle | null>(null); // For photo to painting
   const [selectedAnimeStyle, setSelectedAnimeStyle] = useState<AnimeStyleIndex | null>(null); // For anime generator
   const [selectedExtender, setSelectedExtender] = useState<ImageExtenderParams | null>(null); // For image extender
+  const [selectedTryOnClothes, setSelectedTryOnClothes] = useState<TryOnClothesParams | null>(null); // For try-on clothes
   const [error, setError] = useState<string | null>(null);
 
   const handleImageSelect = useCallback(async (imageSrc: string) => {
@@ -146,6 +148,8 @@ export default function TransformPage() {
         setStep('select-anime');
       } else if (transformationType === 'image-extender') {
         setStep('select-extender');
+      } else if (transformationType === 'try-on-clothes') {
+        setStep('select-try-on-clothes');
       }
     } catch (err) {
       console.error('Image compression error:', err);
@@ -953,6 +957,46 @@ export default function TransformPage() {
     }
   }, [originalImage]);
 
+  const handleTryOnClothesSelect = useCallback(async (tryOnClothesParams: TryOnClothesParams) => {
+    setSelectedTryOnClothes(tryOnClothesParams);
+    
+    if (!originalImage) {
+      setError('No image selected');
+      setStep('error');
+      return;
+    }
+
+    setStep('processing');
+    setError(null);
+
+    try {
+      const response = await fetch('/api/transform', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image: originalImage,
+          transformationType: 'try-on-clothes',
+          tryOnClothes: tryOnClothesParams,
+        }),
+      });
+
+      const data: TransformResponse = await response.json();
+
+      if (!data.success || !data.transformedImage) {
+        throw new Error(data.error || 'Transformation failed');
+      }
+
+      setTransformedImage(data.transformedImage);
+      setStep('result');
+    } catch (err) {
+      console.error('Transform error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to transform image');
+      setStep('error');
+    }
+  }, [originalImage]);
+
   const handleStartOver = useCallback(() => {
     setOriginalImage(null);
     setTransformedImage(null);
@@ -976,6 +1020,7 @@ export default function TransformPage() {
     setSelectedPaintingStyle(null);
     setSelectedAnimeStyle(null);
     setSelectedExtender(null);
+    setSelectedTryOnClothes(null);
     setError(null);
     setStep('select-type');
   }, []);
@@ -1001,6 +1046,7 @@ export default function TransformPage() {
     setSelectedPaintingStyle(null);
     setSelectedAnimeStyle(null);
     setSelectedExtender(null);
+    setSelectedTryOnClothes(null);
     setError(null);
     setStep('select-type');
   }, []);
@@ -1492,8 +1538,22 @@ export default function TransformPage() {
             </motion.div>
           )}
 
+          {step === 'select-try-on-clothes' && originalImage && (
+            <motion.div
+              key="select-try-on-clothes"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+            >
+              <TryOnClothesSelector 
+                onSelect={handleTryOnClothesSelect}
+                onBack={() => setStep('select-type')}
+              />
+            </motion.div>
+          )}
+
           {/* Processing Step */}
-          {step === 'processing' && (selectedAge || selectedGender || selectedFilter || selectedLipColor || selectedBeauty || selectedSlimming || selectedSkin || selectedFusion || selectedSmartBeauty || selectedHairstyle || selectedExpression || selectedCartoon || styleImage || selectedCrop || selectedUpscale || selectedPaintingStyle || selectedAnimeStyle !== null || selectedExtender || transformationType === 'image-enhance' || transformationType === 'image-dehaze' || transformationType === 'photo-colorize' || transformationType === 'image-sharpen' || transformationType === 'image-restore') && (
+          {step === 'processing' && (selectedAge || selectedGender || selectedFilter || selectedLipColor || selectedBeauty || selectedSlimming || selectedSkin || selectedFusion || selectedSmartBeauty || selectedHairstyle || selectedExpression || selectedCartoon || styleImage || selectedCrop || selectedUpscale || selectedPaintingStyle || selectedAnimeStyle !== null || selectedExtender || selectedTryOnClothes || transformationType === 'image-enhance' || transformationType === 'image-dehaze' || transformationType === 'photo-colorize' || transformationType === 'image-sharpen' || transformationType === 'image-restore') && (
             <motion.div
               key="processing"
               initial={{ opacity: 0, scale: 0.95 }}
