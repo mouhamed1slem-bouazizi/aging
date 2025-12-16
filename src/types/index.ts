@@ -24,7 +24,7 @@ export type FaceFilterType =
   | 'nostalgia' | 'cheese' | 'butterfly';
 
 // Transformation type
-export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle' | 'expression' | 'cartoon' | 'image-enhance' | 'image-dehaze' | 'photo-colorize' | 'image-sharpen' | 'image-restore' | 'photo-retouch' | 'image-crop' | 'style-transfer' | 'image-upscale' | 'photo-painting' | 'anime-generator';
+export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle' | 'expression' | 'cartoon' | 'image-enhance' | 'image-dehaze' | 'photo-colorize' | 'image-sharpen' | 'image-restore' | 'photo-retouch' | 'image-crop' | 'style-transfer' | 'image-upscale' | 'photo-painting' | 'anime-generator' | 'image-extender';
 
 export interface AgeCategoryOption {
   id: AgeCategory;
@@ -137,6 +137,20 @@ export type PaintingStyle = 'cartoon' | 'pencil' | 'color_pencil' | 'warm' | 'wa
 
 // Anime style parameters (0-8 index)
 export type AnimeStyleIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+// Image extender parameters (non-mask mode)
+export interface ImageExtenderParams {
+  top: number;        // 0-1.0 upward expansion ratio
+  bottom: number;     // 0-1.0 downward expansion ratio
+  left: number;       // 0-1.0 leftward expansion ratio
+  right: number;      // 0-1.0 rightward expansion ratio
+  steps: number;      // 1+ sampling steps (default 30)
+  strength: number;   // 0.1-1.0 closeness to original (default 0.8)
+  scale: number;      // 1-20 text influence (default 7)
+  seed: number;       // -1+ random seed (default 0, -1 for random)
+  maxHeight: number;  // 0+ max output height (default 1920)
+  maxWidth: number;   // 0+ max output width (default 1920)
+}
 
 export interface FaceFilterOption {
   id: FaceFilterType;

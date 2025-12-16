@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AGE_CATEGORIES, AILAB_API_URL, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams, PaintingStyle, AnimeStyleIndex } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams, PaintingStyle, AnimeStyleIndex, ImageExtenderParams } from '@/types';
 
 export const maxDuration = 300; // Increased for async operations
 
 export async function POST(request: NextRequest): Promise<NextResponse<TransformResponse>> {
   try {
     const body = await request.json();
-    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression, cartoon, styleImage, crop, upscale, paintingStyle, animeStyle } = body as { 
+    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression, cartoon, styleImage, crop, upscale, paintingStyle, animeStyle, extender } = body as { 
       image: string; 
       transformationType: TransformationType;
       ageCategory?: AgeCategory;
@@ -28,6 +28,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       upscale?: UpscaleParams; // For image upscale
       paintingStyle?: PaintingStyle; // For photo to painting
       animeStyle?: AnimeStyleIndex; // For anime generator
+      extender?: ImageExtenderParams; // For image extender
     };
 
     // Validate inputs
@@ -319,6 +320,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       }
       apiUrl = 'https://www.ailabapi.com/api/image/effects/ai-anime-generator';
       console.log(`Generating anime with style ${animeStyle}`);
+    } else if (transformationType === 'image-extender') {
+      // Image extender endpoint - requires expansion parameters
+      if (!extender) {
+        return NextResponse.json(
+          { success: false, error: 'No expansion parameters provided' },
+          { status: 400 }
+        );
+      }
+      apiUrl = 'https://www.ailabapi.com/api/image/editing/ai-image-extender';
+      console.log(`Extending image: top=${extender.top}, bottom=${extender.bottom}, left=${extender.left}, right=${extender.right}`);
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -445,6 +456,18 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       // Anime generator requires task_type and index (async task)
       formData.append('task_type', 'async');
       formData.append('index', animeStyle!.toString());
+    } else if (transformationType === 'image-extender') {
+      // Image extender requires expansion ratios and advanced parameters
+      formData.append('top', extender!.top.toString());
+      formData.append('bottom', extender!.bottom.toString());
+      formData.append('left', extender!.left.toString());
+      formData.append('right', extender!.right.toString());
+      formData.append('steps', extender!.steps.toString());
+      formData.append('strength', extender!.strength.toString());
+      formData.append('scale', extender!.scale.toString());
+      formData.append('seed', extender!.seed.toString());
+      formData.append('max_height', extender!.maxHeight.toString());
+      formData.append('max_width', extender!.maxWidth.toString());
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -735,6 +758,17 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       transformedImage = resultImage.startsWith('data:') 
         ? resultImage 
         : `data:image/jpeg;base64,${resultImage}`;
+    } else if (transformationType === 'image-extender' && data.data?.binary_data_base64) {
+      // Image extender returns base64 array in data.binary_data_base64
+      const base64Array = data.data.binary_data_base64;
+      if (Array.isArray(base64Array) && base64Array.length > 0) {
+        const resultImage = base64Array[0]; // Get first image from array
+        transformedImage = resultImage.startsWith('data:') 
+          ? resultImage 
+          : `data:image/jpeg;base64,${resultImage}`;
+      } else {
+        throw new Error('No image data in response');
+      }
     } else if (transformationType === 'photo-retouch' && data.data?.image_url) {
       // Photo retouch returns image_url - need to download it
       const imageUrl = data.data.image_url;

@@ -226,6 +226,13 @@ export default function HomePage() {
       gradient: 'from-fuchsia-500 to-purple-500',
     },
     {
+      icon: '🔲',
+      title: 'Image Extender',
+      description: 'Expand images in any direction with AI',
+      status: 'Available',
+      gradient: 'from-cyan-500 to-blue-500',
+    },
+    {
       icon: '🎨',
       title: 'Artistic Filters',
       description: 'Transform into art styles',

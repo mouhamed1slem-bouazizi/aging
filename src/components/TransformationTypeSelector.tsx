@@ -170,6 +170,13 @@ const TRANSFORMATION_TYPES = [
     icon: '🎌',
     gradient: 'from-fuchsia-500 to-purple-500',
   },
+  {
+    id: 'image-extender' as TransformationType,
+    label: 'Image Extender',
+    description: 'Expand images in any direction with AI',
+    icon: '🔲',
+    gradient: 'from-cyan-500 to-blue-500',
+  },
 ];
 
 export default function TransformationTypeSelector({
