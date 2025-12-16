@@ -118,6 +118,13 @@ Get your API key: https://www.ailabtools.com/
 - **Features**: Cinematic video effects (5 camera modes: Push, Wide-angle, Hitchcock, Swing, Bounce)
 - **Type**: Synchronous (returns base64 video)
 
+### 14. Live Photos
+- **Endpoint**: `https://www.ailabapi.com/api/portrait/effects/live-photo`
+- **Method**: POST
+- **Documentation**: https://www.ailabtools.com/docs/ai-portrait/effects/live-photo/api
+- **Features**: Animate static portraits with subtle movements (Avatar version or Full body version)
+- **Type**: Synchronous (returns base64 video)
+
 ---
 
 ## ✨ Image Enhancement
@@ -350,4 +357,4 @@ Get your API key: https://www.ailabtools.com/
 ---
 
 **Last Updated**: December 2024  
-**Total Features**: 27 AI-powered transformations
+**Total Features**: 28 AI-powered transformations

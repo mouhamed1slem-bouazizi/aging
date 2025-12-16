@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AGE_CATEGORIES, AILAB_API_URL, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams, PaintingStyle, AnimeStyleIndex, ImageExtenderParams, TryOnClothesParams, HitchcockParams } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams, PaintingStyle, AnimeStyleIndex, ImageExtenderParams, TryOnClothesParams, HitchcockParams, LivePhotoParams } from '@/types';
 
 export const maxDuration = 300; // Increased for async operations
 
 export async function POST(request: NextRequest): Promise<NextResponse<TransformResponse>> {
   try {
     const body = await request.json();
-    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression, cartoon, styleImage, crop, upscale, paintingStyle, animeStyle, extender, tryOnClothes, hitchcock } = body as { 
+    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression, cartoon, styleImage, crop, upscale, paintingStyle, animeStyle, extender, tryOnClothes, hitchcock, livePhoto } = body as { 
       image: string; 
       transformationType: TransformationType;
       ageCategory?: AgeCategory;
@@ -31,6 +31,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       extender?: ImageExtenderParams; // For image extender
       tryOnClothes?: TryOnClothesParams; // For try-on clothes
       hitchcock?: HitchcockParams; // For hitchcock effects
+      livePhoto?: LivePhotoParams; // For live photos
     };
 
     // Validate inputs
@@ -356,6 +357,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       }
       apiUrl = 'https://www.ailabapi.com/api/portrait/effects/hitchcock-effects';
       console.log(`Creating Hitchcock effect: mode=${hitchcock.mode}, resolution=${hitchcock.longSide}px`);
+    } else if (transformationType === 'live-photo') {
+      // Live photo endpoint - creates animated live photos
+      if (!livePhoto) {
+        return NextResponse.json(
+          { success: false, error: 'No live photo parameters provided' },
+          { status: 400 }
+        );
+      }
+      apiUrl = 'https://www.ailabapi.com/api/portrait/effects/live-photo';
+      console.log(`Creating live photo: type=${livePhoto.type === 0 ? 'Avatar' : 'Full Body'}`);
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -374,8 +385,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
     // Create FormData for the API request
     const formData = new FormData();
     const blob = new Blob([imageBuffer], { type: mimeType });
-    // Face fusion, smart beauty, expression, and hitchcock use 'image_target' field name, others use 'image'
-    const imageFieldName = (transformationType === 'face-fusion' || transformationType === 'smart-beauty' || transformationType === 'expression' || transformationType === 'hitchcock') ? 'image_target' : 'image';
+    // Face fusion, smart beauty, expression, hitchcock, and live-photo use 'image_target' field name, others use 'image'
+    const imageFieldName = (transformationType === 'face-fusion' || transformationType === 'smart-beauty' || transformationType === 'expression' || transformationType === 'hitchcock' || transformationType === 'live-photo') ? 'image_target' : 'image';
     formData.append(imageFieldName, blob, `photo.${extension}`);
     
     // Add parameters based on transformation type
@@ -519,6 +530,11 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
         formData.append('speed_shift', hitchcock!.speedShift);
       }
       // Note: for hitchcock, the image field name is 'image_target' instead of 'image'
+      // We'll handle this specially below
+    } else if (transformationType === 'live-photo') {
+      // Live photo requires type parameter (0: Avatar, 1: Full body)
+      formData.append('type', livePhoto!.type.toString());
+      // Note: for live-photo, the image field name is 'image_target' instead of 'image'
       // We'll handle this specially below
     } else {
       formData.append('action_type', actionType!);
@@ -841,6 +857,13 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       }
     } else if (transformationType === 'hitchcock' && data.data?.video) {
       // Hitchcock returns base64 video in data.video
+      const resultVideo = data.data.video;
+      // Return video with proper MIME type for mp4
+      transformedImage = resultVideo.startsWith('data:') 
+        ? resultVideo 
+        : `data:video/mp4;base64,${resultVideo}`;
+    } else if (transformationType === 'live-photo' && data.data?.video) {
+      // Live photo returns base64 video in data.video
       const resultVideo = data.data.video;
       // Return video with proper MIME type for mp4
       transformedImage = resultVideo.startsWith('data:') 

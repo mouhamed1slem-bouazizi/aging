@@ -254,6 +254,13 @@ export default function HomePage() {
       gradient: 'from-purple-500 to-indigo-500',
     },
     {
+      icon: '✨',
+      title: 'Live Photos',
+      description: 'Bring photos to life with animation',
+      status: 'Available',
+      gradient: 'from-pink-500 to-rose-500',
+    },
+    {
       icon: '🎨',
       title: 'Artistic Filters',
       description: 'Transform into art styles',

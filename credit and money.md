@@ -12,23 +12,24 @@ https://www.ailabtools.com/docs/ai-portrait/effects/face-attribute-editing/api
 
 
 ✨
-Face Filters  ==  
+Face Filters  ==  1
 https://www.ailabtools.com/docs/ai-portrait/effects/face-filter/api
 
 
 💄
-Lip Color  ==  
-Try different lipstick colors
+Lip Color  ==  2
+https://www.ailabtools.com/docs/ai-portrait/effects/lips-color-changer/api
 
 
 💎
-Face Beauty  ==  
-Enhance skin with beauty filters
+Face Beauty  ==  5
+ https://www.ailabtools.com/docs/ai-portrait/effects/face-beauty/api
 
 
 🌟
 Face Slimming  ==  
-Slim your face naturally
+https://www.ailabtools.com/docs/ai-portrait/effects/face-slimming/api
+https://www.ailabtools.com/docs/ai-portrait/effects/smart-face-slimming/api
 
 
 🌸
