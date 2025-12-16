@@ -198,13 +198,6 @@ const TRANSFORMATION_TYPES = [
     icon: '🎬',
     gradient: 'from-purple-500 to-indigo-500',
   },
-  {
-    id: 'live-photo' as TransformationType,
-    label: 'Live Photos',
-    description: 'Bring photos to life with animation',
-    icon: '✨',
-    gradient: 'from-pink-500 to-rose-500',
-  },
 ];
 
 export default function TransformationTypeSelector({

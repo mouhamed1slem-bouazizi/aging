@@ -24,7 +24,7 @@ export type FaceFilterType =
   | 'nostalgia' | 'cheese' | 'butterfly';
 
 // Transformation type
-export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle' | 'expression' | 'cartoon' | 'image-enhance' | 'image-dehaze' | 'photo-colorize' | 'image-sharpen' | 'image-restore' | 'photo-retouch' | 'image-crop' | 'style-transfer' | 'image-upscale' | 'photo-painting' | 'anime-generator' | 'image-extender' | 'try-on-clothes' | 'face-enhancer' | 'hitchcock' | 'live-photo';
+export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle' | 'expression' | 'cartoon' | 'image-enhance' | 'image-dehaze' | 'photo-colorize' | 'image-sharpen' | 'image-restore' | 'photo-retouch' | 'image-crop' | 'style-transfer' | 'image-upscale' | 'photo-painting' | 'anime-generator' | 'image-extender' | 'try-on-clothes' | 'face-enhancer' | 'hitchcock';
 
 export interface AgeCategoryOption {
   id: AgeCategory;
@@ -171,13 +171,6 @@ export interface HitchcockParams {
   fps: number;              // Frame rate (default 30)
   useFlow: HitchcockFlow;   // -1: Auto, 0: Disable, 1: Enable
   speedShift?: string;      // Optional speed curve (e.g., "0,1,0.5,4,0.5,4,1,1")
-}
-
-// Live photo parameters
-export type LivePhotoType = 0 | 1;  // 0: Avatar version, 1: Full body version
-
-export interface LivePhotoParams {
-  type: LivePhotoType;
 }
 
 export interface FaceFilterOption {

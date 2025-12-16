@@ -26,7 +26,6 @@ import {
   ImageExtenderSelector,
   TryOnClothesSelector,
   HitchcockSelector,
-  LivePhotoSelector,
   TransformationTypeSelector,
   LoadingAnimation,
   ImageComparison,
@@ -34,11 +33,11 @@ import {
   ErrorDisplay,
   ProtectedRoute,
 } from '@/components';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams, PaintingStyle, AnimeStyleIndex, ImageExtenderParams, TryOnClothesParams, HitchcockParams, LivePhotoParams } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams, PaintingStyle, AnimeStyleIndex, ImageExtenderParams, TryOnClothesParams, HitchcockParams } from '@/types';
 import { AGE_CATEGORIES, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
 import { compressImage } from '@/lib/utils';
 
-type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'select-fusion' | 'select-smart-beauty' | 'select-hairstyle' | 'select-expression' | 'select-cartoon' | 'select-style' | 'select-crop' | 'select-style-transfer' | 'select-upscale' | 'select-painting' | 'select-anime' | 'select-extender' | 'select-try-on-clothes' | 'select-hitchcock' | 'select-live-photo' | 'processing' | 'result' | 'error';
+type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'select-fusion' | 'select-smart-beauty' | 'select-hairstyle' | 'select-expression' | 'select-cartoon' | 'select-style' | 'select-crop' | 'select-style-transfer' | 'select-upscale' | 'select-painting' | 'select-anime' | 'select-extender' | 'select-try-on-clothes' | 'select-hitchcock' | 'processing' | 'result' | 'error';
 
 export default function TransformPage() {
   const [step, setStep] = useState<Step>('select-type');
@@ -67,7 +66,6 @@ export default function TransformPage() {
   const [selectedExtender, setSelectedExtender] = useState<ImageExtenderParams | null>(null); // For image extender
   const [selectedTryOnClothes, setSelectedTryOnClothes] = useState<TryOnClothesParams | null>(null); // For try-on clothes
     const [selectedHitchcock, setSelectedHitchcock] = useState<HitchcockParams | null>(null); // For hitchcock effects
-  const [selectedLivePhoto, setSelectedLivePhoto] = useState<LivePhotoParams | null>(null); // For live photos
   const [error, setError] = useState<string | null>(null);
 
   const handleImageSelect = useCallback(async (imageSrc: string) => {
@@ -156,8 +154,6 @@ export default function TransformPage() {
         setStep('select-try-on-clothes');
       } else if (transformationType === 'hitchcock') {
         setStep('select-hitchcock');
-      } else if (transformationType === 'live-photo') {
-        setStep('select-live-photo');
       }
     } catch (err) {
       console.error('Image compression error:', err);
@@ -1045,46 +1041,6 @@ export default function TransformPage() {
     }
   }, [originalImage]);
 
-  const handleLivePhotoSelect = useCallback(async (livePhotoParams: LivePhotoParams) => {
-    setSelectedLivePhoto(livePhotoParams);
-    
-    if (!originalImage) {
-      setError('No image selected');
-      setStep('error');
-      return;
-    }
-
-    setStep('processing');
-    setError(null);
-
-    try {
-      const response = await fetch('/api/transform', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          image: originalImage,
-          transformationType: 'live-photo',
-          livePhoto: livePhotoParams,
-        }),
-      });
-
-      const data: TransformResponse = await response.json();
-
-      if (!data.success || !data.transformedImage) {
-        throw new Error(data.error || 'Transformation failed');
-      }
-
-      setTransformedImage(data.transformedImage);
-      setStep('result');
-    } catch (err) {
-      console.error('Transform error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to transform image');
-      setStep('error');
-    }
-  }, [originalImage]);
-
   const handleStartOver = useCallback(() => {
     setOriginalImage(null);
     setTransformedImage(null);
@@ -1110,7 +1066,6 @@ export default function TransformPage() {
     setSelectedExtender(null);
     setSelectedTryOnClothes(null);
     setSelectedHitchcock(null);
-    setSelectedLivePhoto(null);
     setError(null);
     setStep('select-type');
   }, []);
@@ -1139,7 +1094,6 @@ export default function TransformPage() {
     setSelectedExtender(null);
     setSelectedTryOnClothes(null);
     setSelectedHitchcock(null);
-    setSelectedLivePhoto(null);
     setError(null);
     setStep('select-type');
   }, []);
@@ -1656,19 +1610,8 @@ export default function TransformPage() {
             </motion.div>
           )}
 
-          {step === 'select-live-photo' && originalImage && (
-            <motion.div
-              key="select-live-photo"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-            >
-              <LivePhotoSelector onSelect={handleLivePhotoSelect} />
-            </motion.div>
-          )}
-
           {/* Processing Step */}
-          {step === 'processing' && (selectedAge || selectedGender || selectedFilter || selectedLipColor || selectedBeauty || selectedSlimming || selectedSkin || selectedFusion || selectedSmartBeauty || selectedHairstyle || selectedExpression || selectedCartoon || styleImage || selectedCrop || selectedUpscale || selectedPaintingStyle || selectedAnimeStyle !== null || selectedExtender || selectedTryOnClothes || selectedHitchcock || selectedLivePhoto || transformationType === 'image-enhance' || transformationType === 'image-dehaze' || transformationType === 'photo-colorize' || transformationType === 'image-sharpen' || transformationType === 'image-restore' || transformationType === 'face-enhancer') && (
+          {step === 'processing' && (selectedAge || selectedGender || selectedFilter || selectedLipColor || selectedBeauty || selectedSlimming || selectedSkin || selectedFusion || selectedSmartBeauty || selectedHairstyle || selectedExpression || selectedCartoon || styleImage || selectedCrop || selectedUpscale || selectedPaintingStyle || selectedAnimeStyle !== null || selectedExtender || selectedTryOnClothes || selectedHitchcock || transformationType === 'image-enhance' || transformationType === 'image-dehaze' || transformationType === 'photo-colorize' || transformationType === 'image-sharpen' || transformationType === 'image-restore' || transformationType === 'face-enhancer') && (
             <motion.div
               key="processing"
               initial={{ opacity: 0, scale: 0.95 }}
@@ -1690,16 +1633,12 @@ export default function TransformPage() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="space-y-8"
             >
-              {transformationType === 'hitchcock' || transformationType === 'live-photo' ? (
-                // Video result for Hitchcock effects and Live Photos
+              {transformationType === 'hitchcock' ? (
+                // Video result for Hitchcock effects
                 <div className="space-y-4">
-                  <div className={`bg-gradient-to-br rounded-2xl p-6 border-2 ${
-                    transformationType === 'hitchcock' 
-                      ? 'from-purple-50 to-indigo-50 border-purple-200' 
-                      : 'from-pink-50 to-rose-50 border-pink-200'
-                  }`}>
+                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-6 border-2 border-purple-200">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
-                      {transformationType === 'hitchcock' ? '🎬 Your Cinematic Video is Ready!' : '✨ Your Live Photo is Ready!'}
+                      🎬 Your Cinematic Video is Ready!
                     </h3>
                     <div className="bg-black rounded-xl overflow-hidden shadow-2xl">
                       <video
@@ -1714,10 +1653,7 @@ export default function TransformPage() {
                       </video>
                     </div>
                     <p className="text-sm text-gray-600 text-center mt-4">
-                      {transformationType === 'hitchcock' 
-                        ? `✨ Video created with ${selectedHitchcock?.mode === 0 ? 'Push Forward' : selectedHitchcock?.mode === 1 ? 'Wide-Angle' : selectedHitchcock?.mode === 2 ? 'Hitchcock Zoom' : selectedHitchcock?.mode === 3 ? 'Swing' : 'Bounce'} effect`
-                        : `✨ Animated ${selectedLivePhoto?.type === 0 ? 'Avatar' : 'Full Body'} version created`
-                      }
+                      ✨ Video created with {selectedHitchcock?.mode === 0 ? 'Push Forward' : selectedHitchcock?.mode === 1 ? 'Wide-Angle' : selectedHitchcock?.mode === 2 ? 'Hitchcock Zoom' : selectedHitchcock?.mode === 3 ? 'Swing' : 'Bounce'} effect
                     </p>
                   </div>
                 </div>

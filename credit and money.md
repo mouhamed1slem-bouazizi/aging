@@ -33,23 +33,23 @@ https://www.ailabtools.com/docs/ai-portrait/effects/smart-face-slimming/api
 
 
 🌸
-Skin Beauty  ==  
-Smooth and brighten skin
+Skin Beauty  ==  5
+https://www.ailabtools.com/docs/ai-portrait/effects/skin-beauty/api
 
 
 🎭
-Merge Portraits  ==  
-Blend faces with template
+Merge Portraits  ==  8
+https://www.ailabtools.com/docs/ai-portrait/effects/face-fusion/api
 
 
 ✨
-Smart Beauty  ==  
-AI-powered beauty enhancement
+Smart Beauty  ==  8
+https://www.ailabtools.com/docs/ai-portrait/effects/smart-beauty/api
 
 
 ✂️
-Hairstyle Changer  ==  
-Try different hairstyles and colors
+Hairstyle Changer  ==  10
+https://www.ailabtools.com/docs/ai-portrait/effects/hairstyle-editor-pro/api
 
 
 😊
@@ -124,3 +124,5 @@ Expand images in any direction with AI
 
 Try on Clothes  ==  15
 https://www.ailabtools.com/docs/ai-portrait/editing/try-on-clothes
+
+
