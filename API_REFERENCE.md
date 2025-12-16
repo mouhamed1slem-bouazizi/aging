@@ -111,11 +111,18 @@ Get your API key: https://www.ailabtools.com/
 - **Features**: Automatic face quality enhancement (up to 10 faces)
 - **Type**: Synchronous (downloads from URL)
 
+### 13. Hitchcock Special Effects
+- **Endpoint**: `https://www.ailabapi.com/api/portrait/effects/hitchcock-effects`
+- **Method**: POST
+- **Documentation**: https://www.ailabtools.com/docs/ai-portrait/effects/hitchcock-effects/api
+- **Features**: Cinematic video effects (5 camera modes: Push, Wide-angle, Hitchcock, Swing, Bounce)
+- **Type**: Synchronous (returns base64 video)
+
 ---
 
 ## ✨ Image Enhancement
 
-### 13. Image Contrast Enhancement (Image Enhancer)
+### 14. Image Contrast Enhancement (Image Enhancer)
 - **Endpoint**: `https://www.ailabapi.com/api/image/enhance/image-contrast-enhancement`
 - **Method**: POST
 - **Documentation**: https://www.ailabtools.com/docs/ai-image/enhance/image-contrast-enhancement/api
@@ -243,6 +250,7 @@ Get your API key: https://www.ailabtools.com/
 | Facial Expressions | Sync | Expression type | Base64 image |
 | Cartoon Yourself | Sync | Cartoon style | URL download |
 | Face Enhancer | Sync | None (automatic) | URL download |
+| Hitchcock Effects | Sync | Camera mode, video settings | Base64 video |
 | Image Enhancer | Sync | None (automatic) | Base64 image |
 | Image Dehaze | Sync | None (automatic) | Base64 image |
 | Photo Colorize | Sync | None (automatic) | Base64 image |
@@ -342,4 +350,4 @@ Get your API key: https://www.ailabtools.com/
 ---
 
 **Last Updated**: December 2024  
-**Total Features**: 26 AI-powered transformations
+**Total Features**: 27 AI-powered transformations

@@ -191,6 +191,13 @@ const TRANSFORMATION_TYPES = [
     icon: '✨',
     gradient: 'from-yellow-500 to-amber-500',
   },
+  {
+    id: 'hitchcock' as TransformationType,
+    label: 'Hitchcock Effects',
+    description: 'Cinematic camera movement videos',
+    icon: '🎬',
+    gradient: 'from-purple-500 to-indigo-500',
+  },
 ];
 
 export default function TransformationTypeSelector({

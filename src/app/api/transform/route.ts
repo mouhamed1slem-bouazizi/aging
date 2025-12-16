@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AGE_CATEGORIES, AILAB_API_URL, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams, PaintingStyle, AnimeStyleIndex, ImageExtenderParams, TryOnClothesParams } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams, PaintingStyle, AnimeStyleIndex, ImageExtenderParams, TryOnClothesParams, HitchcockParams } from '@/types';
 
 export const maxDuration = 300; // Increased for async operations
 
 export async function POST(request: NextRequest): Promise<NextResponse<TransformResponse>> {
   try {
     const body = await request.json();
-    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression, cartoon, styleImage, crop, upscale, paintingStyle, animeStyle, extender, tryOnClothes } = body as { 
+    const { image, transformationType, ageCategory, gender, faceFilter, filterStrength, lipColor, faceBeauty, faceSlimming, skinBeauty, faceFusion, smartBeauty, hairstyle, expression, cartoon, styleImage, crop, upscale, paintingStyle, animeStyle, extender, tryOnClothes, hitchcock } = body as { 
       image: string; 
       transformationType: TransformationType;
       ageCategory?: AgeCategory;
@@ -30,6 +30,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       animeStyle?: AnimeStyleIndex; // For anime generator
       extender?: ImageExtenderParams; // For image extender
       tryOnClothes?: TryOnClothesParams; // For try-on clothes
+      hitchcock?: HitchcockParams; // For hitchcock effects
     };
 
     // Validate inputs
@@ -345,6 +346,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       // Face enhancer endpoint - automatic face quality enhancement
       apiUrl = 'https://www.ailabapi.com/api/portrait/effects/enhance-face';
       console.log('Enhancing face quality with AI');
+    } else if (transformationType === 'hitchcock') {
+      // Hitchcock effects endpoint - creates cinematic video effects
+      if (!hitchcock) {
+        return NextResponse.json(
+          { success: false, error: 'No Hitchcock parameters provided' },
+          { status: 400 }
+        );
+      }
+      apiUrl = 'https://www.ailabapi.com/api/portrait/effects/hitchcock-effects';
+      console.log(`Creating Hitchcock effect: mode=${hitchcock.mode}, resolution=${hitchcock.longSide}px`);
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -363,8 +374,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
     // Create FormData for the API request
     const formData = new FormData();
     const blob = new Blob([imageBuffer], { type: mimeType });
-    // Face fusion, smart beauty, and expression use 'image_target' field name, others use 'image'
-    const imageFieldName = (transformationType === 'face-fusion' || transformationType === 'smart-beauty' || transformationType === 'expression') ? 'image_target' : 'image';
+    // Face fusion, smart beauty, expression, and hitchcock use 'image_target' field name, others use 'image'
+    const imageFieldName = (transformationType === 'face-fusion' || transformationType === 'smart-beauty' || transformationType === 'expression' || transformationType === 'hitchcock') ? 'image_target' : 'image';
     formData.append(imageFieldName, blob, `photo.${extension}`);
     
     // Add parameters based on transformation type
@@ -496,6 +507,19 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       formData.append('clothes_type', tryOnClothes!.clothesType);
     } else if (transformationType === 'face-enhancer') {
       // Face enhancer doesn't need any parameters, just the image
+    } else if (transformationType === 'hitchcock') {
+      // Hitchcock effects requires version and various video parameters
+      formData.append('version', 'v2');
+      formData.append('mode', hitchcock!.mode.toString());
+      formData.append('long_side', hitchcock!.longSide.toString());
+      formData.append('frame_num', hitchcock!.frameNum.toString());
+      formData.append('fps', hitchcock!.fps.toString());
+      formData.append('use_flow', hitchcock!.useFlow.toString());
+      if (hitchcock!.speedShift) {
+        formData.append('speed_shift', hitchcock!.speedShift);
+      }
+      // Note: for hitchcock, the image field name is 'image_target' instead of 'image'
+      // We'll handle this specially below
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -815,6 +839,13 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       } else {
         throw new Error('No image data in response');
       }
+    } else if (transformationType === 'hitchcock' && data.data?.video) {
+      // Hitchcock returns base64 video in data.video
+      const resultVideo = data.data.video;
+      // Return video with proper MIME type for mp4
+      transformedImage = resultVideo.startsWith('data:') 
+        ? resultVideo 
+        : `data:video/mp4;base64,${resultVideo}`;
     } else if (transformationType === 'photo-retouch' && data.data?.image_url) {
       // Photo retouch returns image_url - need to download it
       const imageUrl = data.data.image_url;

@@ -24,7 +24,7 @@ export type FaceFilterType =
   | 'nostalgia' | 'cheese' | 'butterfly';
 
 // Transformation type
-export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle' | 'expression' | 'cartoon' | 'image-enhance' | 'image-dehaze' | 'photo-colorize' | 'image-sharpen' | 'image-restore' | 'photo-retouch' | 'image-crop' | 'style-transfer' | 'image-upscale' | 'photo-painting' | 'anime-generator' | 'image-extender' | 'try-on-clothes' | 'face-enhancer';
+export type TransformationType = 'age' | 'gender' | 'filter' | 'lip-color' | 'face-beauty' | 'face-slimming' | 'skin-beauty' | 'face-fusion' | 'smart-beauty' | 'hairstyle' | 'expression' | 'cartoon' | 'image-enhance' | 'image-dehaze' | 'photo-colorize' | 'image-sharpen' | 'image-restore' | 'photo-retouch' | 'image-crop' | 'style-transfer' | 'image-upscale' | 'photo-painting' | 'anime-generator' | 'image-extender' | 'try-on-clothes' | 'face-enhancer' | 'hitchcock';
 
 export interface AgeCategoryOption {
   id: AgeCategory;
@@ -158,6 +158,19 @@ export type ClothesType = 'upper_body' | 'lower_body' | 'full_body';
 export interface TryOnClothesParams {
   clothesImage: string;  // Clothing image base64
   clothesType: ClothesType;
+}
+
+// Hitchcock effects parameters
+export type HitchcockMode = 0 | 1 | 2 | 3 | 4;
+export type HitchcockFlow = -1 | 0 | 1;
+
+export interface HitchcockParams {
+  mode: HitchcockMode;      // 0: Push forward, 1: Wide-angle, 2: Hitchcock, 3: Swing, 4: Bounce
+  longSide: number;         // Video resolution (default 960, max 1920)
+  frameNum: number;         // Frame count (default 90)
+  fps: number;              // Frame rate (default 30)
+  useFlow: HitchcockFlow;   // -1: Auto, 0: Disable, 1: Enable
+  speedShift?: string;      // Optional speed curve (e.g., "0,1,0.5,4,0.5,4,1,1")
 }
 
 export interface FaceFilterOption {

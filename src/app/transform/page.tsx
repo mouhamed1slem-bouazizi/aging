@@ -25,6 +25,7 @@ import {
   AnimeStyleSelector,
   ImageExtenderSelector,
   TryOnClothesSelector,
+  HitchcockSelector,
   TransformationTypeSelector,
   LoadingAnimation,
   ImageComparison,
@@ -32,11 +33,11 @@ import {
   ErrorDisplay,
   ProtectedRoute,
 } from '@/components';
-import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams, PaintingStyle, AnimeStyleIndex, ImageExtenderParams, TryOnClothesParams } from '@/types';
+import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams, PaintingStyle, AnimeStyleIndex, ImageExtenderParams, TryOnClothesParams, HitchcockParams } from '@/types';
 import { AGE_CATEGORIES, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
 import { compressImage } from '@/lib/utils';
 
-type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'select-fusion' | 'select-smart-beauty' | 'select-hairstyle' | 'select-expression' | 'select-cartoon' | 'select-style' | 'select-crop' | 'select-style-transfer' | 'select-upscale' | 'select-painting' | 'select-anime' | 'select-extender' | 'select-try-on-clothes' | 'processing' | 'result' | 'error';
+type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'select-fusion' | 'select-smart-beauty' | 'select-hairstyle' | 'select-expression' | 'select-cartoon' | 'select-style' | 'select-crop' | 'select-style-transfer' | 'select-upscale' | 'select-painting' | 'select-anime' | 'select-extender' | 'select-try-on-clothes' | 'select-hitchcock' | 'processing' | 'result' | 'error';
 
 export default function TransformPage() {
   const [step, setStep] = useState<Step>('select-type');
@@ -64,6 +65,7 @@ export default function TransformPage() {
   const [selectedAnimeStyle, setSelectedAnimeStyle] = useState<AnimeStyleIndex | null>(null); // For anime generator
   const [selectedExtender, setSelectedExtender] = useState<ImageExtenderParams | null>(null); // For image extender
   const [selectedTryOnClothes, setSelectedTryOnClothes] = useState<TryOnClothesParams | null>(null); // For try-on clothes
+  const [selectedHitchcock, setSelectedHitchcock] = useState<HitchcockParams | null>(null); // For hitchcock effects
   const [error, setError] = useState<string | null>(null);
 
   const handleImageSelect = useCallback(async (imageSrc: string) => {
@@ -150,6 +152,8 @@ export default function TransformPage() {
         setStep('select-extender');
       } else if (transformationType === 'try-on-clothes') {
         setStep('select-try-on-clothes');
+      } else if (transformationType === 'hitchcock') {
+        setStep('select-hitchcock');
       }
     } catch (err) {
       console.error('Image compression error:', err);
@@ -997,6 +1001,46 @@ export default function TransformPage() {
     }
   }, [originalImage]);
 
+  const handleHitchcockSelect = useCallback(async (hitchcockParams: HitchcockParams) => {
+    setSelectedHitchcock(hitchcockParams);
+    
+    if (!originalImage) {
+      setError('No image selected');
+      setStep('error');
+      return;
+    }
+
+    setStep('processing');
+    setError(null);
+
+    try {
+      const response = await fetch('/api/transform', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image: originalImage,
+          transformationType: 'hitchcock',
+          hitchcock: hitchcockParams,
+        }),
+      });
+
+      const data: TransformResponse = await response.json();
+
+      if (!data.success || !data.transformedImage) {
+        throw new Error(data.error || 'Transformation failed');
+      }
+
+      setTransformedImage(data.transformedImage);
+      setStep('result');
+    } catch (err) {
+      console.error('Transform error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to transform image');
+      setStep('error');
+    }
+  }, [originalImage]);
+
   const handleStartOver = useCallback(() => {
     setOriginalImage(null);
     setTransformedImage(null);
@@ -1021,6 +1065,7 @@ export default function TransformPage() {
     setSelectedAnimeStyle(null);
     setSelectedExtender(null);
     setSelectedTryOnClothes(null);
+    setSelectedHitchcock(null);
     setError(null);
     setStep('select-type');
   }, []);
@@ -1047,6 +1092,7 @@ export default function TransformPage() {
     setSelectedAnimeStyle(null);
     setSelectedExtender(null);
     setSelectedTryOnClothes(null);
+    setSelectedHitchcock(null);
     setError(null);
     setStep('select-type');
   }, []);
@@ -1552,8 +1598,19 @@ export default function TransformPage() {
             </motion.div>
           )}
 
+          {step === 'select-hitchcock' && originalImage && (
+            <motion.div
+              key="select-hitchcock"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+            >
+              <HitchcockSelector onSelect={handleHitchcockSelect} />
+            </motion.div>
+          )}
+
           {/* Processing Step */}
-          {step === 'processing' && (selectedAge || selectedGender || selectedFilter || selectedLipColor || selectedBeauty || selectedSlimming || selectedSkin || selectedFusion || selectedSmartBeauty || selectedHairstyle || selectedExpression || selectedCartoon || styleImage || selectedCrop || selectedUpscale || selectedPaintingStyle || selectedAnimeStyle !== null || selectedExtender || selectedTryOnClothes || transformationType === 'image-enhance' || transformationType === 'image-dehaze' || transformationType === 'photo-colorize' || transformationType === 'image-sharpen' || transformationType === 'image-restore' || transformationType === 'face-enhancer') && (
+          {step === 'processing' && (selectedAge || selectedGender || selectedFilter || selectedLipColor || selectedBeauty || selectedSlimming || selectedSkin || selectedFusion || selectedSmartBeauty || selectedHairstyle || selectedExpression || selectedCartoon || styleImage || selectedCrop || selectedUpscale || selectedPaintingStyle || selectedAnimeStyle !== null || selectedExtender || selectedTryOnClothes || selectedHitchcock || transformationType === 'image-enhance' || transformationType === 'image-dehaze' || transformationType === 'photo-colorize' || transformationType === 'image-sharpen' || transformationType === 'image-restore' || transformationType === 'face-enhancer') && (
             <motion.div
               key="processing"
               initial={{ opacity: 0, scale: 0.95 }}

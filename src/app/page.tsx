@@ -247,6 +247,13 @@ export default function HomePage() {
       gradient: 'from-yellow-500 to-amber-500',
     },
     {
+      icon: '🎬',
+      title: 'Hitchcock Effects',
+      description: 'Cinematic camera movement videos',
+      status: 'Available',
+      gradient: 'from-purple-500 to-indigo-500',
+    },
+    {
       icon: '🎨',
       title: 'Artistic Filters',
       description: 'Transform into art styles',
