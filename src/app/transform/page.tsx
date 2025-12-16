@@ -1632,12 +1632,39 @@ export default function TransformPage() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="space-y-8"
             >
-              <ImageComparison
-                originalImage={originalImage}
-                transformedImage={transformedImage}
-                originalLabel="Original"
-                transformedLabel={getResultLabel()}
-              />
+              {transformationType === 'hitchcock' ? (
+                // Video result for Hitchcock effects
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-6 border border-purple-200">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
+                      🎬 Your Cinematic Video is Ready!
+                    </h3>
+                    <div className="bg-black rounded-xl overflow-hidden shadow-2xl">
+                      <video
+                        src={transformedImage}
+                        controls
+                        autoPlay
+                        loop
+                        className="w-full h-auto"
+                        style={{ maxHeight: '600px' }}
+                      >
+                        Your browser does not support the video tag.
+                      </video>
+                    </div>
+                    <p className="text-sm text-gray-600 text-center mt-4">
+                      ✨ Video created with {selectedHitchcock?.mode === 0 ? 'Push Forward' : selectedHitchcock?.mode === 1 ? 'Wide-Angle' : selectedHitchcock?.mode === 2 ? 'Hitchcock Zoom' : selectedHitchcock?.mode === 3 ? 'Swing' : 'Bounce'} effect
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                // Image result for all other transformations
+                <ImageComparison
+                  originalImage={originalImage}
+                  transformedImage={transformedImage}
+                  originalLabel="Original"
+                  transformedLabel={getResultLabel()}
+                />
+              )}
               <ResultActions
                 transformedImage={transformedImage}
                 onStartOver={handleStartOver}
