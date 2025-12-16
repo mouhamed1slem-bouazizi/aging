@@ -2,18 +2,18 @@
 
 
 ⏳
-Age Transformation  ==  
-Make yourself younger or older
+Age Transformation  ==  8
+https://www.ailabtools.com/docs/ai-portrait/effects/face-attribute-editing/api
 
 
 ⚧️
-Gender Transformation  ==  
-See yourself in a different gender
+Gender Transformation  ==  8
+https://www.ailabtools.com/docs/ai-portrait/effects/face-attribute-editing/api
 
 
 ✨
 Face Filters  ==  
-Apply artistic filters to your photo
+https://www.ailabtools.com/docs/ai-portrait/effects/face-filter/api
 
 
 💄
@@ -119,3 +119,7 @@ Transform photos into anime art styles
 🔲
 Image Extender  ==  
 Expand images in any direction with AI
+
+
+Try on Clothes  ==  15
+https://www.ailabtools.com/docs/ai-portrait/editing/try-on-clothes

@@ -240,6 +240,13 @@ export default function HomePage() {
       gradient: 'from-rose-500 to-pink-500',
     },
     {
+      icon: '✨',
+      title: 'Face Enhancer',
+      description: 'AI-powered face quality enhancement',
+      status: 'Available',
+      gradient: 'from-yellow-500 to-amber-500',
+    },
+    {
       icon: '🎨',
       title: 'Artistic Filters',
       description: 'Transform into art styles',

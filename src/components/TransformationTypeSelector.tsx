@@ -184,6 +184,13 @@ const TRANSFORMATION_TYPES = [
     icon: '👗',
     gradient: 'from-rose-500 to-pink-500',
   },
+  {
+    id: 'face-enhancer' as TransformationType,
+    label: 'Face Enhancer',
+    description: 'AI-powered face quality enhancement',
+    icon: '✨',
+    gradient: 'from-yellow-500 to-amber-500',
+  },
 ];
 
 export default function TransformationTypeSelector({

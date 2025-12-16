@@ -74,7 +74,7 @@ export default function TransformPage() {
       setShowCamera(false);
       
       // For image enhancement or dehaze, process immediately without selection step
-      if (transformationType === 'image-enhance' || transformationType === 'image-dehaze' || transformationType === 'photo-colorize' || transformationType === 'image-sharpen' || transformationType === 'image-restore') {
+      if (transformationType === 'image-enhance' || transformationType === 'image-dehaze' || transformationType === 'photo-colorize' || transformationType === 'image-sharpen' || transformationType === 'image-restore' || transformationType === 'face-enhancer') {
         setStep('processing');
         setError(null);
 
@@ -157,7 +157,7 @@ export default function TransformPage() {
       setShowCamera(false);
       
       // For image enhancement or dehaze, process immediately even with uncompressed image
-      if (transformationType === 'image-enhance' || transformationType === 'image-dehaze' || transformationType === 'photo-colorize' || transformationType === 'image-sharpen' || transformationType === 'image-restore') {
+      if (transformationType === 'image-enhance' || transformationType === 'image-dehaze' || transformationType === 'photo-colorize' || transformationType === 'image-sharpen' || transformationType === 'image-restore' || transformationType === 'face-enhancer') {
         setStep('processing');
         setError(null);
 
@@ -1553,7 +1553,7 @@ export default function TransformPage() {
           )}
 
           {/* Processing Step */}
-          {step === 'processing' && (selectedAge || selectedGender || selectedFilter || selectedLipColor || selectedBeauty || selectedSlimming || selectedSkin || selectedFusion || selectedSmartBeauty || selectedHairstyle || selectedExpression || selectedCartoon || styleImage || selectedCrop || selectedUpscale || selectedPaintingStyle || selectedAnimeStyle !== null || selectedExtender || selectedTryOnClothes || transformationType === 'image-enhance' || transformationType === 'image-dehaze' || transformationType === 'photo-colorize' || transformationType === 'image-sharpen' || transformationType === 'image-restore') && (
+          {step === 'processing' && (selectedAge || selectedGender || selectedFilter || selectedLipColor || selectedBeauty || selectedSlimming || selectedSkin || selectedFusion || selectedSmartBeauty || selectedHairstyle || selectedExpression || selectedCartoon || styleImage || selectedCrop || selectedUpscale || selectedPaintingStyle || selectedAnimeStyle !== null || selectedExtender || selectedTryOnClothes || transformationType === 'image-enhance' || transformationType === 'image-dehaze' || transformationType === 'photo-colorize' || transformationType === 'image-sharpen' || transformationType === 'image-restore' || transformationType === 'face-enhancer') && (
             <motion.div
               key="processing"
               initial={{ opacity: 0, scale: 0.95 }}

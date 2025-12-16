@@ -37,7 +37,7 @@ Get your API key: https://www.ailabtools.com/
 ### 2. Face Filters
 - **Endpoint**: `https://www.ailabapi.com/api/portrait/effects/face-attribute-editing`
 - **Method**: POST
-- **Documentation**: https://www.ailabtools.com/docs/ai-portrait/effects/face-attribute-editing/api
+- **Documentation**: https://www.ailabtools.com/docs/ai-portrait/effects/face-filter/api
 - **Features**: 10 preset filters (natural, sweet, goddess, etc.)
 - **Type**: Synchronous
 
@@ -104,39 +104,46 @@ Get your API key: https://www.ailabtools.com/
 - **Features**: 4 cartoon styles
 - **Type**: Synchronous (downloads from URL)
 
+### 12. AI Face Enhancer
+- **Endpoint**: `https://www.ailabapi.com/api/portrait/effects/enhance-face`
+- **Method**: POST
+- **Documentation**: https://www.ailabtools.com/docs/ai-portrait/effects/ai-face-enhancer/api
+- **Features**: Automatic face quality enhancement (up to 10 faces)
+- **Type**: Synchronous (downloads from URL)
+
 ---
 
 ## ✨ Image Enhancement
 
-### 12. Image Contrast Enhancement (Image Enhancer)
+### 13. Image Contrast Enhancement (Image Enhancer)
 - **Endpoint**: `https://www.ailabapi.com/api/image/enhance/image-contrast-enhancement`
 - **Method**: POST
 - **Documentation**: https://www.ailabtools.com/docs/ai-image/enhance/image-contrast-enhancement/api
 - **Features**: Automatic enhancement
 - **Type**: Synchronous
 
-### 13. Image Dehaze
+### 14. Image Dehaze
 - **Endpoint**: `https://www.ailabapi.com/api/image/enhance/image-dehaze`
 - **Method**: POST
 - **Documentation**: https://www.ailabtools.com/docs/ai-image/enhance/image-dehaze/api
 - **Features**: Automatic dehaze
 - **Type**: Synchronous
 
-### 14. Image Sharpness Enhancement
+### 15. Image Sharpness Enhancement
 - **Endpoint**: `https://www.ailabapi.com/api/image/enhance/image-sharpness-enhancement`
 - **Method**: POST
 - **Documentation**: https://www.ailabtools.com/docs/ai-image/enhance/image-sharpness-enhancement/api
 - **Features**: Automatic sharpening
 - **Type**: Synchronous
 
-### 15. Stretch Image Recovery
+### 16. Stretch Image Recovery
 - **Endpoint**: `https://www.ailabapi.com/api/image/enhance/stretch-image-recovery`
 - **Method**: POST
 - **Documentation**: https://www.ailabtools.com/docs/ai-image/enhance/stretch-image-recovery/api
 - **Features**: Fix stretched/distorted images
 - **Type**: Synchronous
 
-### 16. Image Lossless Enlargement (Image Upscaler)
+### 17. Image Lossless Enlargement (Image Upscaler)
 - **Endpoint**: `https://www.ailabapi.com/api/image/enhance/image-lossless-enlargement`
 - **Method**: POST
 - **Documentation**: https://www.ailabtools.com/docs/ai-image/enhance/image-lossless-enlargement/api
@@ -147,28 +154,28 @@ Get your API key: https://www.ailabtools.com/
 
 ## 🎨 Image Effects
 
-### 17. Image Colorization (Photo Colorize)
+### 18. Image Colorization (Photo Colorize)
 - **Endpoint**: `https://www.ailabapi.com/api/image/effects/image-colorization`
 - **Method**: POST
 - **Documentation**: https://www.ailabtools.com/docs/ai-image/effects/image-colorization/api
 - **Features**: Automatic colorization
 - **Type**: Synchronous
 
-### 18. Image Style Conversion (Photo to Painting)
+### 19. Image Style Conversion (Photo to Painting)
 - **Endpoint**: `https://www.ailabapi.com/api/image/effects/image-style-conversion`
 - **Method**: POST
 - **Documentation**: https://www.ailabtools.com/docs/ai-image/effects/image-style-conversion/api
 - **Features**: 9 painting styles (cartoon, pencil, oil painting, etc.)
 - **Type**: Synchronous
 
-### 19. Image Style Migration (Style Transfer)
+### 20. Image Style Migration (Style Transfer)
 - **Endpoint**: `https://www.ailabapi.com/api/image/effects/image-style-migration`
 - **Method**: POST
 - **Documentation**: https://www.ailabtools.com/docs/ai-image/effects/image-style-migration/api
 - **Features**: Transfer style between two images
 - **Type**: Synchronous (downloads from URL)
 
-### 20. AI Anime Generator
+### 21. AI Anime Generator
 - **Endpoint**: `https://www.ailabapi.com/api/image/effects/ai-anime-generator`
 - **Method**: POST
 - **Documentation**: https://www.ailabtools.com/docs/ai-image/effects/ai-anime-generator/api
@@ -179,28 +186,28 @@ Get your API key: https://www.ailabtools.com/
 
 ## 🛠️ Image Editing
 
-### 21. Photo Retouching
+### 22. Photo Retouching
 - **Endpoint**: `https://www.ailabapi.com/api/image/editing/photo-retouching`
 - **Method**: POST
 - **Documentation**: https://www.ailabtools.com/docs/ai-image/editing/photo-retouching/api
 - **Features**: Style transfer with reference image
 - **Type**: Synchronous (downloads from URL)
 
-### 22. Image Cropping
+### 23. Image Cropping
 - **Endpoint**: `https://www.ailabapi.com/api/image/editing/image-cropping`
 - **Method**: POST
 - **Documentation**: https://www.ailabtools.com/docs/ai-image/editing/image-cropping/api
 - **Features**: Smart crop with custom dimensions
 - **Type**: Synchronous (downloads from URL)
 
-### 23. AI Image Extender (Non-Mask Expansion)
+### 24. AI Image Extender (Non-Mask Expansion)
 - **Endpoint**: `https://www.ailabapi.com/api/image/editing/ai-image-extender`
 - **Method**: POST
 - **Documentation**: https://www.ailabtools.com/docs/ai-image/editing/ai-image-extender/api
 - **Features**: Expand images in all directions, advanced controls
 - **Type**: Synchronous
 
-### 24. Try-on Clothes
+### 25. Try-on Clothes
 - **Endpoint**: `https://www.ailabapi.com/api/portrait/editing/try-on-clothes`
 - **Method**: POST
 - **Documentation**: https://www.ailabtools.com/docs/ai-portrait/editing/try-on-clothes/api
@@ -235,6 +242,7 @@ Get your API key: https://www.ailabtools.com/
 | Hairstyle Changer | **Async** | Hairstyle index | Task ID → URL |
 | Facial Expressions | Sync | Expression type | Base64 image |
 | Cartoon Yourself | Sync | Cartoon style | URL download |
+| Face Enhancer | Sync | None (automatic) | URL download |
 | Image Enhancer | Sync | None (automatic) | Base64 image |
 | Image Dehaze | Sync | None (automatic) | Base64 image |
 | Photo Colorize | Sync | None (automatic) | Base64 image |
@@ -334,4 +342,4 @@ Get your API key: https://www.ailabtools.com/
 ---
 
 **Last Updated**: December 2024  
-**Total Features**: 25 AI-powered transformations
+**Total Features**: 26 AI-powered transformations

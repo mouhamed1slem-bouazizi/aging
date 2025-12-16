@@ -341,6 +341,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       }
       apiUrl = 'https://www.ailabapi.com/api/portrait/editing/try-on-clothes';
       console.log(`Try-on clothes: type=${tryOnClothes.clothesType}`);
+    } else if (transformationType === 'face-enhancer') {
+      // Face enhancer endpoint - automatic face quality enhancement
+      apiUrl = 'https://www.ailabapi.com/api/portrait/effects/enhance-face';
+      console.log('Enhancing face quality with AI');
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid transformation type' },
@@ -490,6 +494,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       
       // Add clothes type
       formData.append('clothes_type', tryOnClothes!.clothesType);
+    } else if (transformationType === 'face-enhancer') {
+      // Face enhancer doesn't need any parameters, just the image
     } else {
       formData.append('action_type', actionType!);
       if (target) {
@@ -726,6 +732,24 @@ export async function POST(request: NextRequest): Promise<NextResponse<Transform
       transformedImage = resultImage.startsWith('data:') 
         ? resultImage 
         : `data:image/jpeg;base64,${resultImage}`;
+    } else if (transformationType === 'face-enhancer' && data.data?.image_url) {
+      // Face enhancer returns image_url - need to download it
+      const imageUrl = data.data.image_url;
+      console.log(`Downloading enhanced face image from: ${imageUrl}`);
+      
+      try {
+        const imageResponse = await fetch(imageUrl);
+        if (!imageResponse.ok) {
+          throw new Error(`Failed to download image: ${imageResponse.status}`);
+        }
+        
+        const imageBuffer = await imageResponse.arrayBuffer();
+        const base64Image = Buffer.from(imageBuffer).toString('base64');
+        transformedImage = `data:image/jpeg;base64,${base64Image}`;
+      } catch (downloadError) {
+        console.error('Error downloading enhanced face image:', downloadError);
+        throw new Error('Failed to download transformed image');
+      }
     } else if (transformationType === 'cartoon' && data.data?.image_url) {
       // Cartoon returns image_url - need to download it
       const imageUrl = data.data.image_url;
