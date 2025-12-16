@@ -35,13 +35,13 @@ export default function CreditsDisplay() {
   const getTierIcon = () => {
     switch (credits?.subscriptionTier) {
       case 'premium':
-        return <Crown className="w-5 h-5 text-yellow-500" />;
+        return <Crown className="w-5 h-5 text-white" />;
       case 'pro':
-        return <Zap className="w-5 h-5 text-purple-500" />;
+        return <Zap className="w-5 h-5 text-white" />;
       case 'starter':
-        return <Coins className="w-5 h-5 text-blue-500" />;
+        return <Coins className="w-5 h-5 text-white" />;
       default:
-        return <Coins className="w-5 h-5 text-gray-500" />;
+        return <Coins className="w-5 h-5 text-white" />;
     }
   };
 
