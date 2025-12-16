@@ -1,4 +1,4 @@
-import { storage } from './firebase';
+import { storage, auth } from './firebase';
 import { ref, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
 import { TransformationType } from '@/types';
 
@@ -51,8 +51,9 @@ export const saveToHistory = async (
 
   // Try to upload to Firebase Storage
   try {
-    if (storage) {
-      const storageRef = ref(storage, `transformations/${id}.txt`);
+    if (storage && auth.currentUser) {
+      const userId = auth.currentUser.uid;
+      const storageRef = ref(storage, `transformations/${userId}/${id}.txt`);
       
       // Store as JSON string
       const dataToUpload = JSON.stringify({
@@ -67,7 +68,7 @@ export const saveToHistory = async (
       });
       firebaseUrl = await getDownloadURL(storageRef);
       
-      console.log('Uploaded to Firebase Storage:', id);
+      console.log('Uploaded to Firebase Storage:', userId, id);
     }
   } catch (error) {
     console.warn('Failed to upload to Firebase Storage:', error);
@@ -112,8 +113,9 @@ export const saveToHistory = async (
  * Delete expired items from Firebase Storage
  */
 export const cleanupExpiredHistory = async (): Promise<void> => {
-  if (typeof window === 'undefined' || !storage) return;
+  if (typeof window === 'undefined' || !storage || !auth.currentUser) return;
 
+  const userId = auth.currentUser.uid;
   const history = getHistory();
   const now = Date.now();
   let hasChanges = false;
@@ -122,7 +124,7 @@ export const cleanupExpiredHistory = async (): Promise<void> => {
     // If expired and has Firebase URL, delete from Firebase
     if (item.expiresAt < now && item.firebaseUrl) {
       try {
-        const storageRef = ref(storage, `transformations/${item.id}.txt`);
+        const storageRef = ref(storage, `transformations/${userId}/${item.id}.txt`);
         await deleteObject(storageRef);
         console.log('Deleted expired from Firebase:', item.id);
         
@@ -155,9 +157,10 @@ export const deleteFromHistory = async (id: string): Promise<void> => {
   const item = history.find(h => h.id === id);
 
   // Delete from Firebase if exists
-  if (item?.firebaseUrl && storage) {
+  if (item?.firebaseUrl && storage && auth.currentUser) {
     try {
-      const storageRef = ref(storage, `transformations/${id}.txt`);
+      const userId = auth.currentUser.uid;
+      const storageRef = ref(storage, `transformations/${userId}/${id}.txt`);
       await deleteObject(storageRef);
       console.log('Deleted from Firebase:', id);
     } catch (error) {
