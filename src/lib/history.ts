@@ -61,7 +61,10 @@ export const saveToHistory = async (
         type: transformationType,
       });
       
-      await uploadString(storageRef, dataToUpload, 'raw');
+      // Upload with explicit contentType metadata
+      await uploadString(storageRef, dataToUpload, 'raw', {
+        contentType: 'text/plain',
+      });
       firebaseUrl = await getDownloadURL(storageRef);
       
       console.log('Uploaded to Firebase Storage:', id);
