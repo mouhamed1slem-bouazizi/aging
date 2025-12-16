@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Clock } from 'lucide-react';
 import {
   CameraCapture,
   ImageUpload,
@@ -26,6 +26,7 @@ import {
   ImageExtenderSelector,
   TryOnClothesSelector,
   HitchcockSelector,
+  HistoryViewer,
   TransformationTypeSelector,
   LoadingAnimation,
   ImageComparison,
@@ -36,6 +37,7 @@ import {
 import { AgeCategory, GenderOption, FaceFilterType, TransformationType, TransformResponse, LipColorRGBA, FaceBeautyParams, FaceSlimmingParams, SkinBeautyParams, FaceFusionParams, SmartBeautyParams, HairstyleParams, ExpressionParams, CartoonParams, CropParams, UpscaleParams, PaintingStyle, AnimeStyleIndex, ImageExtenderParams, TryOnClothesParams, HitchcockParams } from '@/types';
 import { AGE_CATEGORIES, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
 import { compressImage } from '@/lib/utils';
+import { saveToHistory, getHistoryCount } from '@/lib/history';
 
 type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'select-fusion' | 'select-smart-beauty' | 'select-hairstyle' | 'select-expression' | 'select-cartoon' | 'select-style' | 'select-crop' | 'select-style-transfer' | 'select-upscale' | 'select-painting' | 'select-anime' | 'select-extender' | 'select-try-on-clothes' | 'select-hitchcock' | 'processing' | 'result' | 'error';
 
@@ -65,8 +67,29 @@ export default function TransformPage() {
   const [selectedAnimeStyle, setSelectedAnimeStyle] = useState<AnimeStyleIndex | null>(null); // For anime generator
   const [selectedExtender, setSelectedExtender] = useState<ImageExtenderParams | null>(null); // For image extender
   const [selectedTryOnClothes, setSelectedTryOnClothes] = useState<TryOnClothesParams | null>(null); // For try-on clothes
-    const [selectedHitchcock, setSelectedHitchcock] = useState<HitchcockParams | null>(null); // For hitchcock effects
+  const [selectedHitchcock, setSelectedHitchcock] = useState<HitchcockParams | null>(null); // For hitchcock effects
   const [error, setError] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
+  const [historyCount, setHistoryCount] = useState(0);
+
+  // Load history count on mount
+  useEffect(() => {
+    setHistoryCount(getHistoryCount());
+  }, []);
+
+  // Save to history when transformation completes
+  useEffect(() => {
+    if (transformedImage && originalImage && transformationType && step === 'result') {
+      saveToHistory(originalImage, transformedImage, transformationType)
+        .then(() => {
+          setHistoryCount(getHistoryCount());
+          console.log('Saved to history');
+        })
+        .catch((error) => {
+          console.error('Failed to save to history:', error);
+        });
+    }
+  }, [transformedImage, originalImage, transformationType, step]);
 
   const handleImageSelect = useCallback(async (imageSrc: string) => {
     try {
@@ -1041,6 +1064,20 @@ export default function TransformPage() {
     }
   }, [originalImage]);
 
+  // Helper to save transformation to history
+  const saveTransformation = useCallback(async (transformed: string) => {
+    if (originalImage && transformationType) {
+      try {
+        await saveToHistory(originalImage, transformed, transformationType);
+        setHistoryCount(getHistoryCount());
+        console.log('Saved to history');
+      } catch (error) {
+        console.error('Failed to save to history:', error);
+        // Don't fail the transformation if history save fails
+      }
+    }
+  }, [originalImage, transformationType]);
+
   const handleStartOver = useCallback(() => {
     setOriginalImage(null);
     setTransformedImage(null);
@@ -1305,6 +1342,20 @@ export default function TransformPage() {
                 </p>
               )}
             </div>
+            
+            {/* History Button */}
+            {historyCount > 0 && (
+              <button
+                onClick={() => setShowHistory(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-600 rounded-xl hover:bg-purple-200 transition-colors font-medium"
+              >
+                <Clock className="w-5 h-5" />
+                <span className="hidden sm:inline">History</span>
+                <span className="bg-purple-600 text-white text-xs px-2 py-0.5 rounded-full">
+                  {historyCount}
+                </span>
+              </button>
+            )}
           </div>
 
           {/* Progress indicator */}
@@ -1698,6 +1749,20 @@ export default function TransformPage() {
           <CameraCapture
             onCapture={handleImageSelect}
             onClose={() => setShowCamera(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* History Viewer Modal */}
+      <AnimatePresence>
+        {showHistory && (
+          <HistoryViewer
+            onClose={() => setShowHistory(false)}
+            onSelectImage={(original, transformed) => {
+              setOriginalImage(original);
+              setTransformedImage(transformed);
+              setStep('result');
+            }}
           />
         )}
       </AnimatePresence>

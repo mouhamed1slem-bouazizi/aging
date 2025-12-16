@@ -1,4 +1,5 @@
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
+import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
 import { getAuth, Auth } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -10,24 +11,19 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Only initialize Firebase on the client side and when config is valid
-let app: FirebaseApp | undefined;
-let auth: Auth | undefined;
+let app: FirebaseApp;
+let storage: FirebaseStorage;
+let auth: Auth;
 
+// Initialize Firebase only on client side
 if (typeof window !== 'undefined') {
-  // Check if Firebase config is valid
-  const hasValidConfig = firebaseConfig.apiKey && 
-                         firebaseConfig.authDomain && 
-                         firebaseConfig.projectId &&
-                         !firebaseConfig.apiKey.includes('your_');
-
-  if (hasValidConfig) {
-    // Initialize Firebase only if it hasn't been initialized
-    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-    auth = getAuth(app);
+  if (!getApps().length) {
+    app = initializeApp(firebaseConfig);
   } else {
-    console.warn('Firebase configuration is missing or invalid. Please update your .env.local file.');
+    app = getApps()[0];
   }
+  storage = getStorage(app);
+  auth = getAuth(app);
 }
 
-export { app, auth };
+export { app, storage, auth };

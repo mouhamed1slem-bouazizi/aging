@@ -25,6 +25,7 @@ export { default as AnimeStyleSelector } from './AnimeStyleSelector';
 export { default as ImageExtenderSelector } from './ImageExtenderSelector';
 export { default as TryOnClothesSelector } from './TryOnClothesSelector';
 export { default as HitchcockSelector } from './HitchcockSelector';
+export { default as HistoryViewer } from './HistoryViewer';
 export { default as TransformationTypeSelector } from './TransformationTypeSelector';
 export { default as LoadingAnimation } from './LoadingAnimation';
 export { default as ImageComparison } from './ImageComparison';
