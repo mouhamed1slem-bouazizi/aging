@@ -128,11 +128,14 @@ export default function SubscriptionPage() {
     }
   };
 
-  const handlePayPalSuccess = async (details: any, planId: string) => {
+  const handlePayPalSuccess = (details: any, planId: string) => {
     console.log('Payment successful:', details);
-    // TODO: Call your backend API to verify payment and add credits
-    alert('Subscription successful! Credits will be added shortly.');
-    router.push('/transform');
+    
+    // Process in background (don't await)
+    setTimeout(() => {
+      alert('Subscription successful! Credits will be added shortly via webhook.');
+      router.push('/transform');
+    }, 100);
   };
 
   return (
@@ -223,8 +226,11 @@ export default function SubscriptionPage() {
                             custom_id: user?.uid || '', // Pass user ID for webhook processing
                           });
                         }}
-                        onApprove={async (data, actions) => {
-                          await handlePayPalSuccess(data, plan.id);
+                        onApprove={(data, actions) => {
+                          // Call handler without awaiting to resolve PayPal's promise immediately
+                          handlePayPalSuccess(data, plan.id);
+                          // Return resolved promise immediately to satisfy PayPal SDK
+                          return Promise.resolve();
                         }}
                         onError={(err) => {
                           console.error('PayPal error:', err);
