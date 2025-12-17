@@ -899,6 +899,11 @@ export default function TransformPage() {
       return;
     }
 
+    const requiredCredits = FEATURE_COSTS['image-crop'] || 3;
+    if (!checkCredits(requiredCredits)) {
+      return;
+    }
+
     setStep('processing');
     setError(null);
 
@@ -940,6 +945,11 @@ export default function TransformPage() {
       return;
     }
 
+    const requiredCredits = FEATURE_COSTS['style-transfer'] || 3;
+    if (!checkCredits(requiredCredits)) {
+      return;
+    }
+
     setStep('processing');
     setError(null);
 
@@ -964,12 +974,13 @@ export default function TransformPage() {
 
       setTransformedImage(data.transformedImage);
       setStep('result');
+      await handleDeductCredits('style-transfer');
     } catch (err) {
       console.error('Transform error:', err);
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, checkCredits, handleDeductCredits]);
 
   const handleUpscaleSelect = useCallback(async (upscaleParams: UpscaleParams) => {
     setSelectedUpscale(upscaleParams);
@@ -977,6 +988,11 @@ export default function TransformPage() {
     if (!originalImage) {
       setError('No image selected');
       setStep('error');
+      return;
+    }
+
+    const requiredCredits = FEATURE_COSTS['image-upscale'] || 5;
+    if (!checkCredits(requiredCredits)) {
       return;
     }
 
@@ -1004,12 +1020,13 @@ export default function TransformPage() {
 
       setTransformedImage(data.transformedImage);
       setStep('result');
+      await handleDeductCredits('image-upscale');
     } catch (err) {
       console.error('Transform error:', err);
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, checkCredits, handleDeductCredits]);
 
   const handlePaintingStyleSelect = useCallback(async (paintingStyle: PaintingStyle) => {
     setSelectedPaintingStyle(paintingStyle);
@@ -1017,6 +1034,11 @@ export default function TransformPage() {
     if (!originalImage) {
       setError('No image selected');
       setStep('error');
+      return;
+    }
+
+    const requiredCredits = FEATURE_COSTS['photo-painting'] || 7;
+    if (!checkCredits(requiredCredits)) {
       return;
     }
 
@@ -1044,12 +1066,13 @@ export default function TransformPage() {
 
       setTransformedImage(data.transformedImage);
       setStep('result');
+      await handleDeductCredits('photo-painting');
     } catch (err) {
       console.error('Transform error:', err);
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, checkCredits, handleDeductCredits]);
 
   const handleAnimeStyleSelect = useCallback(async (animeStyleIndex: AnimeStyleIndex) => {
     setSelectedAnimeStyle(animeStyleIndex);
@@ -1057,6 +1080,11 @@ export default function TransformPage() {
     if (!originalImage) {
       setError('No image selected');
       setStep('error');
+      return;
+    }
+
+    const requiredCredits = FEATURE_COSTS['anime-generator'] || 10;
+    if (!checkCredits(requiredCredits)) {
       return;
     }
 
@@ -1084,12 +1112,13 @@ export default function TransformPage() {
 
       setTransformedImage(data.transformedImage);
       setStep('result');
+      await handleDeductCredits('anime-generator');
     } catch (err) {
       console.error('Transform error:', err);
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, checkCredits, handleDeductCredits]);
 
   const handleExtenderSelect = useCallback(async (extenderParams: ImageExtenderParams) => {
     setSelectedExtender(extenderParams);
@@ -1097,6 +1126,11 @@ export default function TransformPage() {
     if (!originalImage) {
       setError('No image selected');
       setStep('error');
+      return;
+    }
+
+    const requiredCredits = FEATURE_COSTS['image-extender'] || 25;
+    if (!checkCredits(requiredCredits)) {
       return;
     }
 
@@ -1124,12 +1158,13 @@ export default function TransformPage() {
 
       setTransformedImage(data.transformedImage);
       setStep('result');
+      await handleDeductCredits('image-extender');
     } catch (err) {
       console.error('Transform error:', err);
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, checkCredits, handleDeductCredits]);
 
   const handleTryOnClothesSelect = useCallback(async (tryOnClothesParams: TryOnClothesParams) => {
     setSelectedTryOnClothes(tryOnClothesParams);
@@ -1137,6 +1172,11 @@ export default function TransformPage() {
     if (!originalImage) {
       setError('No image selected');
       setStep('error');
+      return;
+    }
+
+    const requiredCredits = FEATURE_COSTS['try-on-clothes'] || 15;
+    if (!checkCredits(requiredCredits)) {
       return;
     }
 
@@ -1164,12 +1204,13 @@ export default function TransformPage() {
 
       setTransformedImage(data.transformedImage);
       setStep('result');
+      await handleDeductCredits('try-on-clothes');
     } catch (err) {
       console.error('Transform error:', err);
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, checkCredits, handleDeductCredits]);
 
     const handleHitchcockSelect = useCallback(async (hitchcockParams: HitchcockParams) => {
     setSelectedHitchcock(hitchcockParams);
@@ -1177,6 +1218,11 @@ export default function TransformPage() {
     if (!originalImage) {
       setError('No image selected');
       setStep('error');
+      return;
+    }
+
+    const requiredCredits = FEATURE_COSTS['hitchcock'] || 15;
+    if (!checkCredits(requiredCredits)) {
       return;
     }
 
@@ -1204,12 +1250,13 @@ export default function TransformPage() {
 
       setTransformedImage(data.transformedImage);
       setStep('result');
+      await handleDeductCredits('hitchcock');
     } catch (err) {
       console.error('Transform error:', err);
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, checkCredits, handleDeductCredits]);
 
   // Helper to save transformation to history
   const saveTransformation = useCallback(async (transformed: string) => {
