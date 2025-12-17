@@ -169,16 +169,15 @@ export const hasEnoughCredits = async (
  * Deduct credits for using a feature
  */
 export const deductCredits = async (
-  featureType: TransformationType,
-  userId?: string
+  userId: string,
+  cost: number,
+  featureType: TransformationType
 ): Promise<{ success: boolean; remainingCredits: number; error?: string }> => {
-  const uid = userId || auth.currentUser?.uid;
-  if (!uid) {
+  if (!userId) {
     return { success: false, remainingCredits: 0, error: 'User not authenticated' };
   }
 
-  const cost = FEATURE_COSTS[featureType];
-  const userCredits = await getUserCredits(uid);
+  const userCredits = await getUserCredits(userId);
 
   if (!userCredits) {
     return { success: false, remainingCredits: 0, error: 'User credits not found' };
@@ -193,7 +192,7 @@ export const deductCredits = async (
   }
 
   // Deduct credits
-  const userRef = doc(db, 'users', uid);
+  const userRef = doc(db, 'users', userId);
   await updateDoc(userRef, {
     credits: increment(-cost),
     totalCreditsSpent: increment(cost),
@@ -201,7 +200,7 @@ export const deductCredits = async (
 
   // Log transaction
   await addDoc(collection(db, 'transactions'), {
-    userId: uid,
+    userId,
     type: 'credit_usage',
     credits: -cost,
     amount: null,

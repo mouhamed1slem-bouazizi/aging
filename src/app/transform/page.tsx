@@ -482,6 +482,12 @@ export default function TransformPage() {
       return;
     }
 
+    // Check credits before transformation
+    const requiredCredits = FEATURE_COSTS['face-beauty'] || 5;
+    if (!checkCredits(requiredCredits)) {
+      return;
+    }
+
     setStep('processing');
     setError(null);
 
@@ -506,12 +512,15 @@ export default function TransformPage() {
 
       setTransformedImage(data.transformedImage);
       setStep('result');
+      
+      // Deduct credits after successful transformation
+      await handleDeductCredits('face-beauty');
     } catch (err) {
       console.error('Transform error:', err);
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, checkCredits, handleDeductCredits]);
 
   const handleSlimmingSelect = useCallback(async (slimmingParams: FaceSlimmingParams) => {
     setSelectedSlimming(slimmingParams);
@@ -519,6 +528,11 @@ export default function TransformPage() {
     if (!originalImage) {
       setError('No image selected');
       setStep('error');
+      return;
+    }
+
+    const requiredCredits = FEATURE_COSTS['face-slimming'] || 5;
+    if (!checkCredits(requiredCredits)) {
       return;
     }
 
@@ -546,12 +560,13 @@ export default function TransformPage() {
 
       setTransformedImage(data.transformedImage);
       setStep('result');
+      await handleDeductCredits('face-slimming');
     } catch (err) {
       console.error('Transform error:', err);
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, checkCredits, handleDeductCredits]);
 
   const handleSkinSelect = useCallback(async (skinParams: SkinBeautyParams) => {
     setSelectedSkin(skinParams);
@@ -559,6 +574,11 @@ export default function TransformPage() {
     if (!originalImage) {
       setError('No image selected');
       setStep('error');
+      return;
+    }
+
+    const requiredCredits = FEATURE_COSTS['skin-beauty'] || 5;
+    if (!checkCredits(requiredCredits)) {
       return;
     }
 
@@ -586,12 +606,13 @@ export default function TransformPage() {
 
       setTransformedImage(data.transformedImage);
       setStep('result');
+      await handleDeductCredits('skin-beauty');
     } catch (err) {
       console.error('Transform error:', err);
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, checkCredits, handleDeductCredits]);
 
   const handleFusionSelect = useCallback(async (fusionParams: FaceFusionParams) => {
     setSelectedFusion(fusionParams);
@@ -599,6 +620,11 @@ export default function TransformPage() {
     if (!originalImage) {
       setError('No image selected');
       setStep('error');
+      return;
+    }
+
+    const requiredCredits = FEATURE_COSTS['face-fusion'] || 8;
+    if (!checkCredits(requiredCredits)) {
       return;
     }
 
@@ -626,12 +652,13 @@ export default function TransformPage() {
 
       setTransformedImage(data.transformedImage);
       setStep('result');
+      await handleDeductCredits('face-fusion');
     } catch (err) {
       console.error('Transform error:', err);
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, checkCredits, handleDeductCredits]);
 
   const handleSmartBeautySelect = useCallback(async (smartBeautyParams: SmartBeautyParams) => {
     setSelectedSmartBeauty(smartBeautyParams);
@@ -639,6 +666,11 @@ export default function TransformPage() {
     if (!originalImage) {
       setError('No image selected');
       setStep('error');
+      return;
+    }
+
+    const requiredCredits = FEATURE_COSTS['smart-beauty'] || 8;
+    if (!checkCredits(requiredCredits)) {
       return;
     }
 
@@ -666,12 +698,13 @@ export default function TransformPage() {
 
       setTransformedImage(data.transformedImage);
       setStep('result');
+      await handleDeductCredits('smart-beauty');
     } catch (err) {
       console.error('Transform error:', err);
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, checkCredits, handleDeductCredits]);
 
   const handleHairstyleSelect = useCallback(async (hairstyleParams: HairstyleParams) => {
     setSelectedHairstyle(hairstyleParams);
@@ -679,6 +712,11 @@ export default function TransformPage() {
     if (!originalImage) {
       setError('No image selected');
       setStep('error');
+      return;
+    }
+
+    const requiredCredits = FEATURE_COSTS['hairstyle'] || 10;
+    if (!checkCredits(requiredCredits)) {
       return;
     }
 
@@ -706,12 +744,13 @@ export default function TransformPage() {
 
       setTransformedImage(data.transformedImage);
       setStep('result');
+      await handleDeductCredits('hairstyle');
     } catch (err) {
       console.error('Transform error:', err);
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, checkCredits, handleDeductCredits]);
 
   const handleExpressionSelect = useCallback(async (expressionParams: ExpressionParams) => {
     setSelectedExpression(expressionParams);
@@ -719,6 +758,11 @@ export default function TransformPage() {
     if (!originalImage) {
       setError('No image selected');
       setStep('error');
+      return;
+    }
+
+    const requiredCredits = FEATURE_COSTS['expression'] || 12;
+    if (!checkCredits(requiredCredits)) {
       return;
     }
 
@@ -746,12 +790,13 @@ export default function TransformPage() {
 
       setTransformedImage(data.transformedImage);
       setStep('result');
+      await handleDeductCredits('expression');
     } catch (err) {
       console.error('Transform error:', err);
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, checkCredits, handleDeductCredits]);
 
   const handleCartoonSelect = useCallback(async (cartoonParams: CartoonParams) => {
     setSelectedCartoon(cartoonParams);
@@ -759,6 +804,11 @@ export default function TransformPage() {
     if (!originalImage) {
       setError('No image selected');
       setStep('error');
+      return;
+    }
+
+    const requiredCredits = FEATURE_COSTS['cartoon'] || 20;
+    if (!checkCredits(requiredCredits)) {
       return;
     }
 
@@ -786,12 +836,13 @@ export default function TransformPage() {
 
       setTransformedImage(data.transformedImage);
       setStep('result');
+      await handleDeductCredits('cartoon');
     } catch (err) {
       console.error('Transform error:', err);
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, checkCredits, handleDeductCredits]);
 
   const handleStyleSelect = useCallback(async (styleImageSrc: string) => {
     setStyleImage(styleImageSrc);
@@ -799,6 +850,11 @@ export default function TransformPage() {
     if (!originalImage) {
       setError('No image selected');
       setStep('error');
+      return;
+    }
+
+    const requiredCredits = FEATURE_COSTS['photo-retouch'] || 3;
+    if (!checkCredits(requiredCredits)) {
       return;
     }
 
@@ -826,12 +882,13 @@ export default function TransformPage() {
 
       setTransformedImage(data.transformedImage);
       setStep('result');
+      await handleDeductCredits('photo-retouch');
     } catch (err) {
       console.error('Transform error:', err);
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, checkCredits, handleDeductCredits]);
 
   const handleCropSelect = useCallback(async (cropParams: CropParams) => {
     setSelectedCrop(cropParams);
@@ -866,12 +923,13 @@ export default function TransformPage() {
 
       setTransformedImage(data.transformedImage);
       setStep('result');
+      await handleDeductCredits('image-crop');
     } catch (err) {
       console.error('Transform error:', err);
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, checkCredits, handleDeductCredits]);
 
   const handleStyleTransferSelect = useCallback(async (styleImageSrc: string) => {
     setStyleImage(styleImageSrc);
