@@ -54,6 +54,22 @@ export default function Header() {
             >
               Subscribe
             </Link>
+            {user && (
+              <Link
+                href="/profile"
+                className="text-gray-600 hover:text-purple-600 font-medium transition-colors"
+              >
+                Profile
+              </Link>
+            )}
+            {user ? (
+              <Link
+                href="/profile"
+                className="text-gray-600 hover:text-purple-600 font-medium transition-colors"
+              >
+                Profile
+              </Link>
+            )}
             {user ? (
               <div className="flex items-center gap-4">
                 <CreditsDisplay />
@@ -134,6 +150,15 @@ export default function Header() {
                 >
                   Subscribe
                 </Link>
+                {user && (
+                  <Link
+                    href="/profile"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block px-4 py-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg font-medium transition-colors"
+                  >
+                    Profile
+                  </Link>
+                )}
                 {user ? (
                   <>
                     <div className="mx-4 mb-2">
