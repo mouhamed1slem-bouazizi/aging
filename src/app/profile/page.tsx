@@ -110,7 +110,7 @@ export default function ProfilePage() {
     }
   };
 
-  const formatDate = (date: Date | null) => {
+  const formatDate = (date: Date | null | undefined) => {
     if (!date) return 'N/A';
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
