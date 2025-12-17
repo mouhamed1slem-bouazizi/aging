@@ -208,8 +208,8 @@ export default function SubscriptionPage() {
                             plan_id: `PLAN_ID_${plan.id.toUpperCase()}`, // Replace with real plan IDs
                           });
                         }}
-                        onApprove={(data, actions) => {
-                          handlePayPalSuccess(data, plan.id);
+                        onApprove={async (data, actions) => {
+                          await handlePayPalSuccess(data, plan.id);
                         }}
                         onError={(err) => {
                           console.error('PayPal error:', err);
