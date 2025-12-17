@@ -38,10 +38,13 @@ import { AgeCategory, GenderOption, FaceFilterType, TransformationType, Transfor
 import { AGE_CATEGORIES, GENDER_OPTIONS, FACE_FILTERS } from '@/lib/constants';
 import { compressImage } from '@/lib/utils';
 import { saveToHistory, getHistoryCount } from '@/lib/history';
+import { getUserCredits, deductCredits, FEATURE_COSTS } from '@/lib/credits';
+import { useAuth } from '@/contexts/AuthContext';
 
 type Step = 'upload' | 'select-type' | 'select-age' | 'select-gender' | 'select-filter' | 'select-lip-color' | 'select-beauty' | 'select-slimming' | 'select-skin' | 'select-fusion' | 'select-smart-beauty' | 'select-hairstyle' | 'select-expression' | 'select-cartoon' | 'select-style' | 'select-crop' | 'select-style-transfer' | 'select-upscale' | 'select-painting' | 'select-anime' | 'select-extender' | 'select-try-on-clothes' | 'select-hitchcock' | 'processing' | 'result' | 'error';
 
 export default function TransformPage() {
+  const { user } = useAuth();
   const [step, setStep] = useState<Step>('select-type');
   const [showCamera, setShowCamera] = useState(false);
   const [originalImage, setOriginalImage] = useState<string | null>(null);
@@ -71,11 +74,70 @@ export default function TransformPage() {
   const [error, setError] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [historyCount, setHistoryCount] = useState(0);
+  const [userCredits, setUserCredits] = useState<number>(0);
 
   // Load history count on mount
   useEffect(() => {
     setHistoryCount(getHistoryCount());
   }, []);
+
+  // Load user credits
+  useEffect(() => {
+    if (user) {
+      getUserCredits().then(credits => {
+        setUserCredits(credits?.credits || 0);
+      }).catch(err => {
+        console.error('Failed to load credits:', err);
+      });
+    }
+  }, [user]);
+
+  // Helper function to check if user has enough credits
+  const checkCredits = useCallback((requiredCredits: number): boolean => {
+    if (userCredits < requiredCredits) {
+      setError(`Insufficient credits. You need ${requiredCredits} credits but only have ${userCredits}. Please subscribe to get more credits.`);
+      setStep('error');
+      return false;
+    }
+    return true;
+  }, [userCredits]);
+
+  // Helper function to deduct credits after successful transformation
+  const handleDeductCredits = useCallback(async (transformationType: TransformationType) => {
+    if (!user) return;
+    
+    const cost = FEATURE_COSTS[transformationType] || 1;
+    try {
+      await deductCredits(user.uid, cost, transformationType);
+      // Reload credits after deduction
+      const updatedCredits = await getUserCredits();
+      setUserCredits(updatedCredits?.credits || 0);
+    } catch (error) {
+      console.error('Failed to deduct credits:', error);
+    }
+  }, [user]);
+
+  // Generic wrapper for transformation with credit check
+  const withCreditCheck = useCallback(async (
+    transformationType: TransformationType,
+    transformFn: () => Promise<void>
+  ) => {
+    const requiredCredits = FEATURE_COSTS[transformationType] || 1;
+    if (!checkCredits(requiredCredits)) {
+      return;
+    }
+    
+    try {
+      await transformFn();
+      // Only deduct if transformation was successful (step is 'result')
+      if (step === 'result') {
+        await handleDeductCredits(transformationType);
+      }
+    } catch (error) {
+      // Error already handled in transformFn
+      throw error;
+    }
+  }, [checkCredits, handleDeductCredits, step]);
 
   // Save to history when transformation completes
   useEffect(() => {
@@ -261,6 +323,12 @@ export default function TransformPage() {
       return;
     }
 
+    // Check credits before transformation
+    const requiredCredits = FEATURE_COSTS[type] || 1;
+    if (!checkCredits(requiredCredits)) {
+      return;
+    }
+
     setStep('processing');
     setError(null);
 
@@ -285,12 +353,15 @@ export default function TransformPage() {
 
       setTransformedImage(data.transformedImage);
       setStep('result');
+      
+      // Deduct credits after successful transformation
+      await handleDeductCredits(type);
     } catch (err) {
       console.error('Transform error:', err);
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, checkCredits, handleDeductCredits]);
 
   const handleAgeSelect = useCallback(async (age: AgeCategory) => {
     setSelectedAge(age);
@@ -309,6 +380,12 @@ export default function TransformPage() {
     if (!originalImage) {
       setError('No image selected');
       setStep('error');
+      return;
+    }
+
+    // Check credits before transformation
+    const requiredCredits = FEATURE_COSTS['filter'] || 1;
+    if (!checkCredits(requiredCredits)) {
       return;
     }
 
@@ -337,12 +414,15 @@ export default function TransformPage() {
 
       setTransformedImage(data.transformedImage);
       setStep('result');
+      
+      // Deduct credits after successful transformation
+      await handleDeductCredits('filter');
     } catch (err) {
       console.error('Transform error:', err);
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, checkCredits, handleDeductCredits]);
 
   const handleLipColorSelect = useCallback(async (lipColor: LipColorRGBA) => {
     setSelectedLipColor(lipColor);
@@ -350,6 +430,12 @@ export default function TransformPage() {
     if (!originalImage) {
       setError('No image selected');
       setStep('error');
+      return;
+    }
+
+    // Check credits before transformation
+    const requiredCredits = FEATURE_COSTS['lip-color'] || 2;
+    if (!checkCredits(requiredCredits)) {
       return;
     }
 
@@ -377,12 +463,15 @@ export default function TransformPage() {
 
       setTransformedImage(data.transformedImage);
       setStep('result');
+      
+      // Deduct credits after successful transformation
+      await handleDeductCredits('lip-color');
     } catch (err) {
       console.error('Transform error:', err);
       setError(err instanceof Error ? err.message : 'Failed to transform image');
       setStep('error');
     }
-  }, [originalImage]);
+  }, [originalImage, checkCredits, handleDeductCredits]);
 
   const handleBeautySelect = useCallback(async (beautyParams: FaceBeautyParams) => {
     setSelectedBeauty(beautyParams);

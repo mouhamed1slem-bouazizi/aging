@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserCredits, UserCredits, getSubscriptionBenefits, FEATURE_COSTS } from '@/lib/credits';
+import { getUserCredits, UserCredits, getSubscriptionBenefits, FEATURE_COSTS, addCredits } from '@/lib/credits';
 import { Check, Crown, Zap, Coins, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '';
 
@@ -128,14 +130,48 @@ export default function SubscriptionPage() {
     }
   };
 
-  const handlePayPalSuccess = (details: any, planId: string) => {
+  const handlePayPalSuccess = async (details: any, planId: 'starter' | 'pro' | 'premium') => {
     console.log('Payment successful:', details);
     
-    // Process in background (don't await)
-    setTimeout(() => {
-      alert('Subscription successful! Credits will be added shortly via webhook.');
+    if (!user) return;
+    
+    try {
+      // Get plan details
+      const plan = plans.find(p => p.id === planId);
+      if (!plan) return;
+      
+      // Add credits immediately
+      await addCredits(
+        user.uid,
+        plan.credits,
+        'paypal',
+        details.subscriptionID,
+        plan.price,
+        details.orderID
+      );
+      
+      // Update user subscription status in Firestore
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, {
+        subscriptionTier: planId,
+        subscriptionStatus: 'active',
+        subscriptionPlatform: 'paypal',
+        subscriptionId: details.subscriptionID,
+        subscriptionStartDate: serverTimestamp(),
+        autoRenew: true,
+        updatedAt: serverTimestamp(),
+      });
+      
+      // Reload credits to show updated balance
+      await loadCredits();
+      
+      // Show success message
+      alert(`Subscription successful! ${plan.credits} credits added to your account.`);
       router.push('/transform');
-    }, 100);
+    } catch (error) {
+      console.error('Error processing subscription:', error);
+      alert('Subscription created but there was an error adding credits. Please contact support.');
+    }
   };
 
   return (
@@ -226,10 +262,10 @@ export default function SubscriptionPage() {
                             custom_id: user?.uid || '', // Pass user ID for webhook processing
                           });
                         }}
-                        onApprove={(data, actions) => {
-                          // Call handler without awaiting to resolve PayPal's promise immediately
-                          handlePayPalSuccess(data, plan.id);
-                          // Return resolved promise immediately to satisfy PayPal SDK
+                        onApprove={async (data, actions) => {
+                          // Process payment and add credits
+                          await handlePayPalSuccess(data, plan.id);
+                          // Return resolved promise to satisfy PayPal SDK
                           return Promise.resolve();
                         }}
                         onError={(err) => {
