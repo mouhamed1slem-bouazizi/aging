@@ -203,9 +203,14 @@ export default function SubscriptionPage() {
                       <PayPalButtons
                         style={{ layout: 'vertical', shape: 'pill' }}
                         createSubscription={(data, actions) => {
-                          // TODO: Use actual PayPal Plan IDs from your PayPal dashboard
+                          // Get the correct Plan ID from environment variables
+                          const planId = plan.id === 'starter' ? process.env.NEXT_PUBLIC_PAYPAL_STARTER_PLAN_ID :
+                                        plan.id === 'pro' ? process.env.NEXT_PUBLIC_PAYPAL_PRO_PLAN_ID :
+                                        process.env.NEXT_PUBLIC_PAYPAL_PREMIUM_PLAN_ID;
+                          
                           return actions.subscription.create({
-                            plan_id: `PLAN_ID_${plan.id.toUpperCase()}`, // Replace with real plan IDs
+                            plan_id: planId || '',
+                            custom_id: user?.uid || '', // Pass user ID for webhook processing
                           });
                         }}
                         onApprove={async (data, actions) => {
