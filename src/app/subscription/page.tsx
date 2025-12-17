@@ -208,8 +208,18 @@ export default function SubscriptionPage() {
                                         plan.id === 'pro' ? process.env.NEXT_PUBLIC_PAYPAL_PRO_PLAN_ID :
                                         process.env.NEXT_PUBLIC_PAYPAL_PREMIUM_PLAN_ID;
                           
+                          console.log('Creating subscription for plan:', plan.id);
+                          console.log('Plan ID from env:', planId);
+                          console.log('User ID:', user?.uid);
+                          
+                          if (!planId) {
+                            console.error('Plan ID is undefined! Check environment variables.');
+                            alert('Subscription configuration error. Please contact support.');
+                            throw new Error('Plan ID not configured');
+                          }
+                          
                           return actions.subscription.create({
-                            plan_id: planId || '',
+                            plan_id: planId,
                             custom_id: user?.uid || '', // Pass user ID for webhook processing
                           });
                         }}
