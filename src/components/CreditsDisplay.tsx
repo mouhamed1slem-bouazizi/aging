@@ -5,6 +5,8 @@ import { getUserCredits, UserCredits } from '@/lib/credits';
 import { useAuth } from '@/contexts/AuthContext';
 import { Coins, Crown, Zap } from 'lucide-react';
 import Link from 'next/link';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 export default function CreditsDisplay() {
   const { user } = useAuth();
@@ -12,21 +14,42 @@ export default function CreditsDisplay() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      loadCredits();
-    }
-  }, [user]);
-
-  const loadCredits = async () => {
-    try {
-      const userCredits = await getUserCredits();
-      setCredits(userCredits);
-    } catch (error) {
-      console.error('Failed to load credits:', error);
-    } finally {
+    if (!user) {
+      setCredits(null);
       setLoading(false);
+      return;
     }
-  };
+
+    // Set up real-time listener for credit updates
+    const userRef = doc(db, 'users', user.uid);
+    const unsubscribe = onSnapshot(userRef, (doc) => {
+      if (doc.exists()) {
+        const data = doc.data();
+        setCredits({
+          credits: data.credits || 0,
+          totalCreditsEarned: data.totalCreditsEarned || 0,
+          totalCreditsSpent: data.totalCreditsSpent || 0,
+          subscriptionTier: data.subscriptionTier || 'free',
+          subscriptionStatus: data.subscriptionStatus || 'none',
+          subscriptionPlatform: data.subscriptionPlatform || null,
+          subscriptionId: data.subscriptionId || null,
+          subscriptionStartDate: data.subscriptionStartDate?.toDate() || null,
+          subscriptionEndDate: data.subscriptionEndDate?.toDate() || null,
+          subscriptionRenewDate: data.subscriptionRenewDate?.toDate() || null,
+          autoRenew: data.autoRenew || false,
+          lastPaymentDate: data.lastPaymentDate?.toDate() || null,
+          lastPaymentAmount: data.lastPaymentAmount || null,
+        });
+      }
+      setLoading(false);
+    }, (error) => {
+      console.error('Error listening to credits:', error);
+      setLoading(false);
+    });
+
+    // Cleanup listener on unmount
+    return () => unsubscribe();
+  }, [user]);
 
   if (!user || loading) {
     return null;
