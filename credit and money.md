@@ -1,8 +1,3 @@
-5 credit only one time after that user need to upgrade == Free user 
-400 credit monthly add to the balance == 4.99$ 
-1000 credit monthly add to the balance == 9.99$
-3500 credit monthly add to the balance == 19.99$
-
 
 Now every feature will cost like the list below:
 
