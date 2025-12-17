@@ -48,6 +48,12 @@ export default function Header() {
             >
               Transform
             </Link>
+            <Link
+              href="/subscription"
+              className="text-gray-600 hover:text-purple-600 font-medium transition-colors"
+            >
+              Subscribe
+            </Link>
             {user ? (
               <div className="flex items-center gap-4">
                 <CreditsDisplay />
@@ -120,6 +126,13 @@ export default function Header() {
                   className="block px-4 py-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg font-medium transition-colors"
                 >
                   Transform
+                </Link>
+                <Link
+                  href="/subscription"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block px-4 py-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg font-medium transition-colors"
+                >
+                  Subscribe
                 </Link>
                 {user ? (
                   <>
