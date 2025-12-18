@@ -120,12 +120,42 @@ export default function ProfilePage() {
   };
 
   const getDaysUntilRenewal = () => {
-    if (!credits?.subscriptionRenewDate) return null;
+    if (!credits?.subscriptionRenewDate) {
+      // Fallback: If no renewal date, calculate 30 days from start date
+      if (credits?.subscriptionStartDate) {
+        const startDate = new Date(credits.subscriptionStartDate);
+        const estimatedRenewal = new Date(startDate);
+        estimatedRenewal.setDate(estimatedRenewal.getDate() + 30);
+        
+        const now = new Date();
+        const diffTime = estimatedRenewal.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays > 0 ? diffDays : null;
+      }
+      return null;
+    }
+    
     const now = new Date();
     const renewDate = new Date(credits.subscriptionRenewDate);
     const diffTime = renewDate.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
+  };
+
+  const getNextBillingDate = () => {
+    if (credits?.subscriptionRenewDate) {
+      return credits.subscriptionRenewDate;
+    }
+    
+    // Fallback: Calculate 30 days from start date if renewal date is missing
+    if (credits?.subscriptionStartDate) {
+      const startDate = new Date(credits.subscriptionStartDate);
+      const estimatedRenewal = new Date(startDate);
+      estimatedRenewal.setDate(estimatedRenewal.getDate() + 30);
+      return estimatedRenewal;
+    }
+    
+    return null;
   };
 
   if (loading) {
@@ -236,8 +266,8 @@ export default function ProfilePage() {
                   <div>
                     <p className="text-sm text-gray-600">Next Billing Date</p>
                     <p className="font-semibold text-gray-800">
-                      {formatDate(credits.subscriptionRenewDate)}
-                      {daysUntilRenewal !== null && (
+                      {formatDate(getNextBillingDate())}
+                      {daysUntilRenewal !== null && daysUntilRenewal > 0 && (
                         <span className="text-sm text-purple-600 ml-2">
                           ({daysUntilRenewal} days)
                         </span>
@@ -367,7 +397,7 @@ export default function ProfilePage() {
 
             <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
               <p className="text-sm text-yellow-800">
-                <strong>Note:</strong> Your subscription will remain active until the end of your current billing period ({formatDate(credits?.subscriptionRenewDate)}).
+                <strong>Note:</strong> Your subscription will remain active until the end of your current billing period ({formatDate(getNextBillingDate())}).
               </p>
             </div>
 

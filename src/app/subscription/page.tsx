@@ -140,6 +140,10 @@ export default function SubscriptionPage() {
       const plan = plans.find(p => p.id === planId);
       if (!plan) return;
       
+      // Calculate next billing date (30 days from now)
+      const nextBillingDate = new Date();
+      nextBillingDate.setDate(nextBillingDate.getDate() + 30);
+      
       // Add credits immediately
       await addCredits(
         user.uid,
@@ -158,6 +162,7 @@ export default function SubscriptionPage() {
         subscriptionPlatform: 'paypal',
         subscriptionId: details.subscriptionID,
         subscriptionStartDate: serverTimestamp(),
+        subscriptionRenewDate: nextBillingDate,
         autoRenew: true,
         updatedAt: serverTimestamp(),
       });
