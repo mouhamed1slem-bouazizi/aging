@@ -35,7 +35,7 @@ export const FEATURE_COSTS: Record<TransformationType, number> = {
 
 // Subscription tiers
 export type SubscriptionTier = 'free' | 'starter' | 'pro' | 'premium';
-export type SubscriptionStatus = 'active' | 'canceled' | 'expired' | 'none';
+export type SubscriptionStatus = 'active' | 'cancelled' | 'suspended' | 'expired' | 'none';
 export type PaymentPlatform = 'paypal' | 'apple' | null;
 
 export interface UserCredits {
