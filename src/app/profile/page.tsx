@@ -97,14 +97,36 @@ export default function ProfilePage() {
   };
 
   const handleCancelSubscription = async () => {
+    if (!user || !credits?.subscriptionId) return;
+    
     setCancelling(true);
     try {
-      // TODO: Call PayPal API to cancel subscription
-      alert('To cancel your subscription, please log in to your PayPal account and manage your subscriptions there.');
+      const response = await fetch('/api/cancel-subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          subscriptionId: credits.subscriptionId,
+          userId: user.uid,
+          reason: 'Customer requested cancellation via website',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to cancel subscription');
+      }
+
+      alert('Subscription cancelled successfully! Your subscription will remain active until the end of your current billing period.');
       setShowCancelModal(false);
+      
+      // Reload credits to show updated status
+      await loadCredits();
     } catch (error) {
       console.error('Failed to cancel subscription:', error);
-      alert('Failed to cancel subscription. Please try again or contact support.');
+      alert(error instanceof Error ? error.message : 'Failed to cancel subscription. Please try again or contact support.');
     } finally {
       setCancelling(false);
     }
@@ -303,6 +325,35 @@ export default function ProfilePage() {
                   Cancel Subscription
                 </button>
               </div>
+            </div>
+          ) : credits?.subscriptionStatus === 'cancelled' && currentPlan ? (
+            <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
+              <h3 className="text-2xl font-bold text-gray-800 mb-6">Cancelled Subscription</h3>
+              
+              <div className="bg-gradient-to-r from-gray-400 to-gray-500 rounded-2xl p-6 text-white mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    {currentPlan.icon}
+                    <h4 className="text-2xl font-bold">{currentPlan.name} Plan</h4>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-semibold opacity-90">Cancelled</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+                <p className="text-sm text-yellow-800">
+                  <strong>Your subscription has been cancelled.</strong> You'll continue to have access to your remaining credits until {formatDate(getNextBillingDate())}.
+                </p>
+              </div>
+
+              <Link
+                href="/subscription"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-semibold hover:opacity-90 transition-opacity"
+              >
+                Reactivate Subscription
+              </Link>
             </div>
           ) : (
             <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">

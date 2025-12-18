@@ -292,16 +292,17 @@ async function handleSubscriptionCancelled(resource: any) {
     // Update user subscription status
     const userRef = doc(db, 'users', userId);
     await updateDoc(userRef, {
-      subscriptionStatus: 'canceled',
+      subscriptionStatus: 'cancelled',
       autoRenew: false,
+      cancelledAt: serverTimestamp(),
     });
 
     // Update subscription record
     const subscriptionRef = doc(db, 'subscriptions', subscriptionId);
     await updateDoc(subscriptionRef, {
-      status: 'canceled',
+      status: 'cancelled',
       autoRenew: false,
-      canceledAt: serverTimestamp(),
+      cancelledAt: serverTimestamp(),
     });
 
     console.log('Subscription cancelled:', subscriptionId);
