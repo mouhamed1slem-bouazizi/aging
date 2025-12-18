@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
-import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, updateDoc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 
 const PAYPAL_API_BASE = process.env.PAYPAL_MODE === 'live' 
   ? 'https://api-m.paypal.com'
@@ -74,13 +74,32 @@ export async function POST(request: NextRequest) {
       updatedAt: serverTimestamp(),
     });
 
-    // Update subscription record
-    const subscriptionRef = doc(db, 'subscriptions', subscriptionId);
-    await updateDoc(subscriptionRef, {
-      status: 'cancelled',
-      cancelledAt: serverTimestamp(),
-      autoRenew: false,
-    });
+    // Update subscription record if it exists
+    try {
+      const subscriptionRef = doc(db, 'subscriptions', subscriptionId);
+      const subscriptionDoc = await getDoc(subscriptionRef);
+      
+      if (subscriptionDoc.exists()) {
+        await updateDoc(subscriptionRef, {
+          status: 'cancelled',
+          cancelledAt: serverTimestamp(),
+          autoRenew: false,
+        });
+      } else {
+        // Create the subscription document if it doesn't exist
+        await setDoc(subscriptionRef, {
+          userId,
+          subscriptionId,
+          status: 'cancelled',
+          cancelledAt: serverTimestamp(),
+          autoRenew: false,
+          platform: 'paypal',
+        });
+      }
+    } catch (subscriptionError) {
+      console.error('Error updating subscription record:', subscriptionError);
+      // Continue even if subscription record update fails
+    }
 
     console.log('Subscription cancelled successfully:', subscriptionId);
 
