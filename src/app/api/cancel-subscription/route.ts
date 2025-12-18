@@ -44,25 +44,61 @@ export async function POST(request: NextRequest) {
     // Get PayPal access token
     const accessToken = await getPayPalAccessToken();
 
-    // Cancel subscription via PayPal API
-    const cancelResponse = await fetch(
-      `${PAYPAL_API_BASE}/v1/billing/subscriptions/${subscriptionId}/cancel`,
+    // First, check the subscription status in PayPal
+    const statusResponse = await fetch(
+      `${PAYPAL_API_BASE}/v1/billing/subscriptions/${subscriptionId}`,
       {
-        method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          reason: reason || 'Customer requested cancellation',
-        }),
       }
     );
 
-    if (!cancelResponse.ok) {
-      const errorData = await cancelResponse.json();
-      console.error('PayPal cancellation error:', errorData);
-      throw new Error(errorData.message || 'Failed to cancel subscription with PayPal');
+    let subscriptionAlreadyCancelled = false;
+
+    if (statusResponse.ok) {
+      const subscriptionData = await statusResponse.json();
+      const currentStatus = subscriptionData.status;
+      
+      console.log('Current PayPal subscription status:', currentStatus);
+      
+      // Check if already cancelled
+      if (currentStatus === 'CANCELLED' || currentStatus === 'EXPIRED') {
+        console.log('Subscription already cancelled/expired in PayPal');
+        subscriptionAlreadyCancelled = true;
+      }
+    }
+
+    // Only attempt to cancel if not already cancelled
+    if (!subscriptionAlreadyCancelled) {
+      // Cancel subscription via PayPal API
+      const cancelResponse = await fetch(
+        `${PAYPAL_API_BASE}/v1/billing/subscriptions/${subscriptionId}/cancel`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            reason: reason || 'Customer requested cancellation',
+          }),
+        }
+      );
+
+      if (!cancelResponse.ok) {
+        const errorData = await cancelResponse.json();
+        console.error('PayPal cancellation error:', errorData);
+        
+        // Check if subscription is already cancelled
+        if (errorData.details?.[0]?.issue === 'SUBSCRIPTION_STATUS_INVALID') {
+          // Subscription already cancelled in PayPal, just update Firebase
+          console.log('Subscription already cancelled in PayPal, updating Firebase only');
+        } else {
+          throw new Error(errorData.message || 'Failed to cancel subscription with PayPal');
+        }
+      }
     }
 
     // Update user subscription status in Firebase
