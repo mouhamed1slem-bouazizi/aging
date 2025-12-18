@@ -13,6 +13,7 @@
     "@types/file-saver": "^2.0.7",
     "file-saver": "^2.0.5",
     "firebase": "^12.6.0",
+    "firebase-admin": "^13.6.0",
     "framer-motion": "^12.23.25",
     "lucide-react": "^0.556.0",
     "next": "16.0.7",

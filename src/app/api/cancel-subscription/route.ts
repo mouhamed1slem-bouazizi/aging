@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/firebase';
-import { doc, updateDoc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { getAdminDb } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 const PAYPAL_API_BASE = process.env.PAYPAL_MODE === 'live' 
   ? 'https://api-m.paypal.com'
@@ -102,32 +102,33 @@ export async function POST(request: NextRequest) {
     }
 
     // Update user subscription status in Firebase
-    const userRef = doc(db, 'users', userId);
-    await updateDoc(userRef, {
+    const db = getAdminDb();
+    const userRef = db.collection('users').doc(userId);
+    await userRef.update({
       subscriptionStatus: 'cancelled',
       autoRenew: false,
-      cancelledAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+      cancelledAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     });
 
     // Update subscription record if it exists
     try {
-      const subscriptionRef = doc(db, 'subscriptions', subscriptionId);
-      const subscriptionDoc = await getDoc(subscriptionRef);
+      const subscriptionRef = db.collection('subscriptions').doc(subscriptionId);
+      const subscriptionDoc = await subscriptionRef.get();
       
-      if (subscriptionDoc.exists()) {
-        await updateDoc(subscriptionRef, {
+      if (subscriptionDoc.exists) {
+        await subscriptionRef.update({
           status: 'cancelled',
-          cancelledAt: serverTimestamp(),
+          cancelledAt: FieldValue.serverTimestamp(),
           autoRenew: false,
         });
       } else {
         // Create the subscription document if it doesn't exist
-        await setDoc(subscriptionRef, {
+        await subscriptionRef.set({
           userId,
           subscriptionId,
           status: 'cancelled',
-          cancelledAt: serverTimestamp(),
+          cancelledAt: FieldValue.serverTimestamp(),
           autoRenew: false,
           platform: 'paypal',
         });

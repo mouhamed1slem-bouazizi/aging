@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { addCredits } from '@/lib/credits';
-import { db } from '@/lib/firebase';
-import { doc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { getAdminDb } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 const PAYPAL_API_BASE = process.env.PAYPAL_MODE === 'live' 
   ? 'https://api-m.paypal.com'
@@ -198,20 +198,21 @@ async function handleSubscriptionActivated(resource: any) {
     );
 
     // Update user subscription info
-    const userRef = doc(db, 'users', userId);
-    await updateDoc(userRef, {
+    const db = getAdminDb();
+    const userRef = db.collection('users').doc(userId);
+    await userRef.update({
       subscriptionTier: planDetails.tier,
       subscriptionStatus: 'active',
       subscriptionPlatform: 'paypal',
       subscriptionId: subscriptionId,
-      subscriptionStartDate: serverTimestamp(),
+      subscriptionStartDate: FieldValue.serverTimestamp(),
       subscriptionRenewDate: new Date(resource.billing_info?.next_billing_time),
       autoRenew: true,
     });
 
     // Store subscription record
-    const subscriptionRef = doc(db, 'subscriptions', subscriptionId);
-    await setDoc(subscriptionRef, {
+    const subscriptionRef = db.collection('subscriptions').doc(subscriptionId);
+    await subscriptionRef.set({
       userId,
       platform: 'paypal',
       planId,
@@ -219,7 +220,7 @@ async function handleSubscriptionActivated(resource: any) {
       status: 'active',
       monthlyCredits: planDetails.credits,
       monthlyPrice: planDetails.price,
-      createdAt: serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
       startDate: new Date(resource.start_time),
       currentPeriodStart: new Date(resource.billing_info?.last_payment?.time || resource.start_time),
       currentPeriodEnd: new Date(resource.billing_info?.next_billing_time),
@@ -296,19 +297,20 @@ async function handleSubscriptionCancelled(resource: any) {
     if (!userId) return;
 
     // Update user subscription status
-    const userRef = doc(db, 'users', userId);
-    await updateDoc(userRef, {
+    const db = getAdminDb();
+    const userRef = db.collection('users').doc(userId);
+    await userRef.update({
       subscriptionStatus: 'cancelled',
       autoRenew: false,
-      cancelledAt: serverTimestamp(),
+      cancelledAt: FieldValue.serverTimestamp(),
     });
 
     // Update subscription record
-    const subscriptionRef = doc(db, 'subscriptions', subscriptionId);
-    await updateDoc(subscriptionRef, {
+    const subscriptionRef = db.collection('subscriptions').doc(subscriptionId);
+    await subscriptionRef.update({
       status: 'cancelled',
       autoRenew: false,
-      cancelledAt: serverTimestamp(),
+      cancelledAt: FieldValue.serverTimestamp(),
     });
 
     console.log('Subscription cancelled:', subscriptionId);
@@ -325,13 +327,14 @@ async function handleSubscriptionSuspended(resource: any) {
 
     if (!userId) return;
 
-    const userRef = doc(db, 'users', userId);
-    await updateDoc(userRef, {
+    const db = getAdminDb();
+    const userRef = db.collection('users').doc(userId);
+    await userRef.update({
       subscriptionStatus: 'suspended',
     });
 
-    const subscriptionRef = doc(db, 'subscriptions', subscriptionId);
-    await updateDoc(subscriptionRef, {
+    const subscriptionRef = db.collection('subscriptions').doc(subscriptionId);
+    await subscriptionRef.update({
       status: 'suspended',
     });
 
@@ -349,15 +352,16 @@ async function handleSubscriptionExpired(resource: any) {
 
     if (!userId) return;
 
-    const userRef = doc(db, 'users', userId);
-    await updateDoc(userRef, {
+    const db = getAdminDb();
+    const userRef = db.collection('users').doc(userId);
+    await userRef.update({
       subscriptionStatus: 'expired',
       subscriptionTier: 'free',
       autoRenew: false,
     });
 
-    const subscriptionRef = doc(db, 'subscriptions', subscriptionId);
-    await updateDoc(subscriptionRef, {
+    const subscriptionRef = db.collection('subscriptions').doc(subscriptionId);
+    await subscriptionRef.update({
       status: 'expired',
     });
 
