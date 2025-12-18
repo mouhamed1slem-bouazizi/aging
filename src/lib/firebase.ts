@@ -17,16 +17,15 @@ let storage: FirebaseStorage;
 let auth: Auth;
 let db: Firestore;
 
-// Initialize Firebase only on client side
-if (typeof window !== 'undefined') {
-  if (!getApps().length) {
-    app = initializeApp(firebaseConfig);
-  } else {
-    app = getApps()[0];
-  }
-  storage = getStorage(app);
-  auth = getAuth(app);
-  db = getFirestore(app);
+// Initialize Firebase (works on both client and server)
+if (!getApps().length) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApps()[0];
 }
+
+storage = getStorage(app);
+auth = getAuth(app);
+db = getFirestore(app);
 
 export { app, storage, auth, db };
