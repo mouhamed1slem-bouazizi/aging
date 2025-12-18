@@ -67,9 +67,12 @@ async function getPayPalAccessToken(): Promise<string> {
 
 // Get plan details (credits and tier)
 function getPlanDetails(planId: string): { tier: 'starter' | 'pro' | 'premium', credits: number, price: number } | null {
-  const starterPlanId = process.env.PAYPAL_STARTER_PLAN_ID;
-  const proPlanId = process.env.PAYPAL_PRO_PLAN_ID;
-  const premiumPlanId = process.env.PAYPAL_PREMIUM_PLAN_ID;
+  const starterPlanId = process.env.PAYPAL_STARTER_PLAN_ID || process.env.NEXT_PUBLIC_PAYPAL_STARTER_PLAN_ID;
+  const proPlanId = process.env.PAYPAL_PRO_PLAN_ID || process.env.NEXT_PUBLIC_PAYPAL_PRO_PLAN_ID;
+  const premiumPlanId = process.env.PAYPAL_PREMIUM_PLAN_ID || process.env.NEXT_PUBLIC_PAYPAL_PREMIUM_PLAN_ID;
+
+  console.log('Checking plan ID:', planId);
+  console.log('Available plan IDs:', { starter: starterPlanId, pro: proPlanId, premium: premiumPlanId });
 
   if (planId === starterPlanId) {
     return { tier: 'starter', credits: 400, price: 4.99 };
@@ -79,6 +82,8 @@ function getPlanDetails(planId: string): { tier: 'starter' | 'pro' | 'premium', 
     return { tier: 'premium', credits: 3500, price: 19.99 };
   }
 
+  // Fallback: Try to detect plan from subscription resource
+  console.warn('Unknown plan ID, will try to detect from subscription data');
   return null;
 }
 
